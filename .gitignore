@@ -36,3 +36,6 @@ supabase/seed-output.json
 supabase/.temp
 .vercel
 .env*
+
+# local docs
+CFDIGITAL*Prompt Operativo Maestro.pdf
