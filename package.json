@@ -16,9 +16,12 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "2.57.4",
+    "@tailwindcss/postcss": "4.3.3",
     "next": "15.5.23",
+    "postcss": "8.5.26",
     "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react-dom": "19.1.1",
+    "tailwindcss": "4.3.3"
   },
   "devDependencies": {
     "@playwright/test": "1.55.0",

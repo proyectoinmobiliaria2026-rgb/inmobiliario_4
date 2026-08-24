@@ -1,13 +1,14 @@
-import Link from "next/link";
+import React from "react";
 import { PublicationsWorkbench } from "@/components/publications/publications-workbench";
 
 export default function PublicationsPage() {
   return (
-    <main className="container">
-      <h1>Publicaciones y scheduler</h1>
-      <p>Programa y publica contenido en redes sociales.</p>
-      <Link href="/">Volver al inicio</Link>
+    <div className="grid gap-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Publicaciones y scheduler</h1>
+        <p className="panel-subtitle">Programa y publica contenido en redes sociales.</p>
+      </header>
       <PublicationsWorkbench />
-    </main>
+    </div>
   );
 }

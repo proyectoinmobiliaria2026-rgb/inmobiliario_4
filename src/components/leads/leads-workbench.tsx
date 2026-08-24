@@ -86,21 +86,66 @@ export function LeadsWorkbench() {
     await loadLeads();
   }
 
-  if (!session) return <section className="workbench"><div className="card"><h2>Iniciar sesión</h2><form onSubmit={handleLogin} className="form-grid"><label className="field">Email<input aria-label="Email" type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} /></label><label className="field">Password<input aria-label="Password" type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} /></label><div className="actions"><button type="submit">Iniciar sesión</button></div></form>{error && <div className="notice notice-error">{error}</div>}</div></section>;
+  if (!session) return (
+    <section className="workbench">
+      <div className="card card-pad mx-auto w-full max-w-md">
+        <h2 className="panel-title">Iniciar sesión</h2>
+        <p className="panel-subtitle mt-1">Accede para administrar tu CRM de leads.</p>
+        <form onSubmit={handleLogin} className="mt-4 grid gap-4">
+          <label className="field">Email<input className="input" aria-label="Email" type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} /></label>
+          <label className="field">Password<input className="input" aria-label="Password" type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} /></label>
+          <div className="actions"><button type="submit" className="btn-primary w-full">Iniciar sesión</button></div>
+        </form>
+        {error && <div className="notice notice-error mt-4">{error}</div>}
+      </div>
+    </section>
+  );
 
   return <section className="workbench">
     {error && <div className="notice notice-error">{error}</div>}{notice && <div className="notice">{notice}</div>}
-    <form className="card" onSubmit={submitLead} data-testid="lead-form"><h2>{editingId ? "Editar lead" : "Nuevo lead"}</h2><div className="form-grid">
-      <label className="field">Nombre<input aria-label="Nombre" value={form.name} onChange={(event) => updateField("name", event.target.value)} /></label>
-      <label className="field">Teléfono<input aria-label="Teléfono" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} /></label>
-      <label className="field">Email<input aria-label="Email del lead" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} /></label>
-      <label className="field">Origen<input aria-label="Origen" placeholder="Portal, WhatsApp..." value={form.origin} onChange={(event) => updateField("origin", event.target.value)} /></label>
-      <label className="field">Estado<select aria-label="Estado" value={form.status} onChange={(event) => updateField("status", event.target.value)}>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select></label>
-      <label className="field">Próximo seguimiento<input aria-label="Próximo seguimiento" type="datetime-local" value={form.nextFollowUpAt} onChange={(event) => updateField("nextFollowUpAt", event.target.value)} /></label>
-      <label className="field">Último contacto<input aria-label="Último contacto" type="datetime-local" value={form.lastContactAt} onChange={(event) => updateField("lastContactAt", event.target.value)} /></label>
-      <label className="field form-span">Notas<textarea aria-label="Notas" rows={3} value={form.notes} onChange={(event) => updateField("notes", event.target.value)} /></label>
-    </div><div className="actions"><button type="submit">{editingId ? "Guardar cambios" : "Crear lead"}</button>{editingId && <button type="button" className="btn-secondary" onClick={startCreate}>Cancelar</button>}</div></form>
-    <form className="card" onSubmit={(event) => { event.preventDefault(); void loadLeads(); }} data-testid="lead-filters"><h2>Seguimiento</h2><div className="form-grid"><label className="field">Búsqueda<input aria-label="Búsqueda" placeholder="Nombre, email o teléfono" value={search} onChange={(event) => setSearch(event.target.value)} /></label><label className="field">Filtrar por estado<select aria-label="Filtrar por estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="">Todos</option>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select></label></div><div className="actions"><button type="submit">Filtrar</button><button type="button" className="btn-secondary" onClick={() => { setSearch(""); setStatusFilter(""); }}>Limpiar</button></div></form>
-    <div className="card" data-testid="lead-list"><h2>Leads ({leads.length})</h2><div className="list">{leads.map((lead) => <div className="property-row lead-row" key={lead.id}><div><strong>{lead.name}</strong><div className="muted">{lead.email ?? lead.phone} {lead.origin ? `· ${lead.origin}` : ""}</div></div><span className={`badge badge-${lead.status}`}>{lead.status}</span><span className="muted">{lead.next_follow_up_at ? `Seguimiento: ${new Date(lead.next_follow_up_at).toLocaleString()}` : "Sin seguimiento"}</span><div className="actions"><select aria-label={`Estado de ${lead.name}`} value={lead.status} onChange={(event) => void changeStatus(lead, event.target.value as LeadStatus)}>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select><button type="button" onClick={() => startEdit(lead)}>Editar</button><button type="button" className="btn-danger" onClick={() => void deleteLead(lead)}>Eliminar lead</button></div></div>)}{leads.length === 0 && <p className="muted">No hay leads para mostrar.</p>}</div></div>
+    <form className="card card-pad" onSubmit={submitLead} data-testid="lead-form">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="panel-title">{editingId ? "Editar lead" : "Nuevo lead"}</h2>
+        <span className="badge badge-new">CRM</span>
+      </div>
+      <div className="form-grid">
+        <label className="field">Nombre<input className="input" aria-label="Nombre" value={form.name} onChange={(event) => updateField("name", event.target.value)} /></label>
+        <label className="field">Teléfono<input className="input" aria-label="Teléfono" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} /></label>
+        <label className="field">Email<input className="input" aria-label="Email del lead" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} /></label>
+        <label className="field">Origen<input className="input" aria-label="Origen" placeholder="Portal, WhatsApp..." value={form.origin} onChange={(event) => updateField("origin", event.target.value)} /></label>
+        <label className="field">Estado<select className="input" aria-label="Estado" value={form.status} onChange={(event) => updateField("status", event.target.value)}>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select></label>
+        <label className="field">Próximo seguimiento<input className="input" aria-label="Próximo seguimiento" type="datetime-local" value={form.nextFollowUpAt} onChange={(event) => updateField("nextFollowUpAt", event.target.value)} /></label>
+        <label className="field">Último contacto<input className="input" aria-label="Último contacto" type="datetime-local" value={form.lastContactAt} onChange={(event) => updateField("lastContactAt", event.target.value)} /></label>
+        <label className="field form-span">Notas<textarea className="input" aria-label="Notas" rows={3} value={form.notes} onChange={(event) => updateField("notes", event.target.value)} /></label>
+      </div>
+      <div className="actions"><button type="submit" className="btn-primary">{editingId ? "Guardar cambios" : "Crear lead"}</button>{editingId && <button type="button" className="btn-secondary" onClick={startCreate}>Cancelar</button>}</div>
+    </form>
+    <form className="card card-pad" onSubmit={(event) => { event.preventDefault(); void loadLeads(); }} data-testid="lead-filters">
+      <h2 className="panel-title mb-4">Seguimiento</h2>
+      <div className="form-grid">
+        <label className="field">Búsqueda<input className="input" aria-label="Búsqueda" placeholder="Nombre, email o teléfono" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+        <label className="field">Filtrar por estado<select className="input" aria-label="Filtrar por estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="">Todos</option>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select></label>
+      </div>
+      <div className="actions"><button type="submit" className="btn-primary">Filtrar</button><button type="button" className="btn-secondary" onClick={() => { setSearch(""); setStatusFilter(""); }}>Limpiar</button></div>
+    </form>
+    <div className="card" data-testid="lead-list">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <h2 className="panel-title">Pipeline de leads</h2>
+        <span className="badge badge-contacted">{leads.length} activos</span>
+      </div>
+      <div className="p-5"><div className="list">{leads.map((lead) => <div className="property-row lead-row" key={lead.id}>
+        <div className="min-w-40">
+          <strong className="text-sm text-slate-900">{lead.name}</strong>
+          <div className="muted">{lead.email ?? lead.phone} {lead.origin ? `· ${lead.origin}` : ""}</div>
+        </div>
+        <span className={`badge badge-${lead.status}`}>{lead.status}</span>
+        <span className="muted">{lead.next_follow_up_at ? `Seguimiento: ${new Date(lead.next_follow_up_at).toLocaleString()}` : "Sin seguimiento"}</span>
+        <div className="actions">
+          <select className="input w-auto py-1.5 text-xs" aria-label={`Estado de ${lead.name}`} value={lead.status} onChange={(event) => void changeStatus(lead, event.target.value as LeadStatus)}>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select>
+          <button type="button" className="btn-secondary" onClick={() => startEdit(lead)}>Editar</button>
+          <button type="button" className="btn-danger" onClick={() => void deleteLead(lead)}>Eliminar lead</button>
+        </div>
+      </div>)}{leads.length === 0 && <p className="muted">No hay leads para mostrar.</p>}</div></div>
+    </div>
   </section>;
 }

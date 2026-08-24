@@ -621,33 +621,23 @@ export function PropertiesWorkbench() {
   if (!session) {
     return (
       <section className="workbench">
-        <div className="card">
-          <h2>Iniciar sesión</h2>
-          <p className="muted">Accede con tu cuenta para administrar propiedades y multimedia.</p>
-          <form onSubmit={handleLogin} className="form-grid">
+        <div className="card card-pad mx-auto w-full max-w-md">
+          <h2 className="panel-title">Iniciar sesión</h2>
+          <p className="panel-subtitle mt-1">Accede con tu cuenta para administrar propiedades y multimedia.</p>
+          <form onSubmit={handleLogin} className="mt-4 grid gap-4">
             <label className="field">
               Email
-              <input
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                type="email"
-                autoComplete="email"
-              />
+              <input className="input" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} type="email" autoComplete="email" />
             </label>
             <label className="field">
               Password
-              <input
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                type="password"
-                autoComplete="current-password"
-              />
+              <input className="input" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} type="password" autoComplete="current-password" />
             </label>
             <div className="actions">
-              <button type="submit">Iniciar sesión</button>
+              <button type="submit" className="btn-primary w-full">Iniciar sesión</button>
             </div>
           </form>
-          {error && <div className="notice notice-error">{error}</div>}
+          {error && <div className="notice notice-error mt-4">{error}</div>}
         </div>
       </section>
     );
@@ -657,143 +647,108 @@ export function PropertiesWorkbench() {
 
   return (
     <section className="workbench">
-      <div className="card">
+      <div className="card card-pad flex flex-wrap items-center justify-between gap-3">
         <div className="session-bar">
-          <span data-testid="session-status">{session.email ?? session.id}</span>
-          <button type="button" onClick={handleRefreshSession}>
-            Renovar sesión
-          </button>
-          <button type="button" onClick={handleLogout} className="btn-secondary">
-            Cerrar sesión
-          </button>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">
+            {(session.email ?? "?").charAt(0).toUpperCase()}
+          </span>
+          <span data-testid="session-status" className="text-sm font-medium text-slate-700">{session.email ?? session.id}</span>
+        </div>
+        <div className="actions pt-0">
+          <button type="button" onClick={handleRefreshSession} className="btn-secondary">Renovar sesión</button>
+          <button type="button" onClick={handleLogout} className="btn-ghost">Cerrar sesión</button>
         </div>
       </div>
 
       {error && <div className="notice notice-error">{error}</div>}
       {notice && <div className="notice">{notice}</div>}
 
-      <form className="card" onSubmit={submitProperty} data-testid="property-form">
-        <h2>{editingId ? "Editar propiedad" : "Nueva propiedad"}</h2>
+      <form className="card card-pad" onSubmit={submitProperty} data-testid="property-form">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="panel-title">{editingId ? "Editar propiedad" : "Nueva propiedad"}</h2>
+          <span className="badge badge-draft">Inventario</span>
+        </div>
         <div className="form-grid">
           <label className="field form-span">
             Título
-            <input value={form.title} onChange={(e) => updateField("title", e.target.value)} />
+            <input className="input" value={form.title} onChange={(e) => updateField("title", e.target.value)} />
           </label>
           <label className="field form-span">
             Descripción
-            <textarea
-              rows={3}
-              value={form.description}
-              onChange={(e) => updateField("description", e.target.value)}
-            />
+            <textarea className="input" rows={3} value={form.description} onChange={(e) => updateField("description", e.target.value)} />
           </label>
           <label className="field">
             Tipo de propiedad
-            <select value={form.propertyType} onChange={(e) => updateField("propertyType", e.target.value)}>
+            <select className="input" value={form.propertyType} onChange={(e) => updateField("propertyType", e.target.value)}>
               {PROPERTY_TYPES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
+                <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </label>
           <label className="field">
             Operación
-            <select value={form.operationType} onChange={(e) => updateField("operationType", e.target.value)}>
+            <select className="input" value={form.operationType} onChange={(e) => updateField("operationType", e.target.value)}>
               {OPERATION_TYPES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
+                <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </label>
           <label className="field">
             Estado de publicación
-            <select value={form.status} onChange={(e) => updateField("status", e.target.value)}>
+            <select className="input" value={form.status} onChange={(e) => updateField("status", e.target.value)}>
               {PROPERTY_STATUSES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
+                <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </label>
           <label className="field">
             Dirección
-            <input value={form.addressLine} onChange={(e) => updateField("addressLine", e.target.value)} />
+            <input className="input" value={form.addressLine} onChange={(e) => updateField("addressLine", e.target.value)} />
           </label>
           <label className="field">
             Ciudad
-            <input value={form.city} onChange={(e) => updateField("city", e.target.value)} />
+            <input className="input" value={form.city} onChange={(e) => updateField("city", e.target.value)} />
           </label>
           <label className="field">
             Estado/Región
-            <input value={form.state} onChange={(e) => updateField("state", e.target.value)} />
+            <input className="input" value={form.state} onChange={(e) => updateField("state", e.target.value)} />
           </label>
           <label className="field">
             País
-            <input value={form.country} onChange={(e) => updateField("country", e.target.value)} />
+            <input className="input" value={form.country} onChange={(e) => updateField("country", e.target.value)} />
           </label>
           <label className="field">
             Recámaras
-            <input
-              type="number"
-              min={0}
-              value={form.bedrooms}
-              onChange={(e) => updateField("bedrooms", e.target.value)}
-            />
+            <input className="input" type="number" min={0} value={form.bedrooms} onChange={(e) => updateField("bedrooms", e.target.value)} />
           </label>
           <label className="field">
             Baños
-            <input
-              type="number"
-              min={0}
-              value={form.bathrooms}
-              onChange={(e) => updateField("bathrooms", e.target.value)}
-            />
+            <input className="input" type="number" min={0} value={form.bathrooms} onChange={(e) => updateField("bathrooms", e.target.value)} />
           </label>
           <label className="field">
             Estacionamientos
-            <input
-              type="number"
-              min={0}
-              value={form.parkingSpots}
-              onChange={(e) => updateField("parkingSpots", e.target.value)}
-            />
+            <input className="input" type="number" min={0} value={form.parkingSpots} onChange={(e) => updateField("parkingSpots", e.target.value)} />
           </label>
           <label className="field">
             Área (m²)
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.areaM2}
-              onChange={(e) => updateField("areaM2", e.target.value)}
-            />
+            <input className="input" type="number" min={0} step="0.01" value={form.areaM2} onChange={(e) => updateField("areaM2", e.target.value)} />
           </label>
           <label className="field">
             Precio
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.priceAmount}
-              onChange={(e) => updateField("priceAmount", e.target.value)}
-            />
+            <input className="input" type="number" min={0} step="0.01" value={form.priceAmount} onChange={(e) => updateField("priceAmount", e.target.value)} />
           </label>
           <label className="field">
             Moneda
-            <select value={form.priceCurrency} onChange={(e) => updateField("priceCurrency", e.target.value)}>
+            <select className="input" value={form.priceCurrency} onChange={(e) => updateField("priceCurrency", e.target.value)}>
               {CURRENCIES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
+                <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </label>
         </div>
 
         {formErrors.length > 0 && (
-          <ul className="error-list">
+          <ul className="error-list mt-4">
             {formErrors.map((item) => (
               <li key={item}>{item}</li>
             ))}
@@ -801,7 +756,7 @@ export function PropertiesWorkbench() {
         )}
 
         <div className="actions">
-          <button type="submit" disabled={savingProperty}>
+          <button type="submit" disabled={savingProperty} className="btn-primary">
             {editingId ? "Guardar cambios" : "Crear propiedad"}
           </button>
           {editingId && (
@@ -812,216 +767,189 @@ export function PropertiesWorkbench() {
         </div>
       </form>
 
-      <form className="card" onSubmit={applyFilters} data-testid="property-filters">
-        <h2>Filtros</h2>
+      <form className="card card-pad" onSubmit={applyFilters} data-testid="property-filters">
+        <h2 className="panel-title mb-4">Filtros</h2>
         <div className="form-grid">
           <label className="field">
             Búsqueda
-            <input
-              value={filters.search}
-              onChange={(e) => updateFilter("search", e.target.value)}
-              placeholder="Buscar por título..."
-            />
+            <input className="input" value={filters.search} onChange={(e) => updateFilter("search", e.target.value)} placeholder="Buscar por título..." />
           </label>
           <label className="field">
             Filtrar por estado
-            <select value={filters.status} onChange={(e) => updateFilter("status", e.target.value)}>
+            <select className="input" value={filters.status} onChange={(e) => updateFilter("status", e.target.value)}>
               <option value="">Todos</option>
               {PROPERTY_STATUSES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
+                <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </label>
           <label className="field">
             Filtrar por tipo
-            <select value={filters.propertyType} onChange={(e) => updateFilter("propertyType", e.target.value)}>
+            <select className="input" value={filters.propertyType} onChange={(e) => updateFilter("propertyType", e.target.value)}>
               <option value="">Todos</option>
               {PROPERTY_TYPES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
+                <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </label>
           <label className="field">
             Filtrar por operación
-            <select value={filters.operationType} onChange={(e) => updateFilter("operationType", e.target.value)}>
+            <select className="input" value={filters.operationType} onChange={(e) => updateFilter("operationType", e.target.value)}>
               <option value="">Todas</option>
               {OPERATION_TYPES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
+                <option key={item} value={item}>{item}</option>
               ))}
             </select>
           </label>
         </div>
         <div className="actions">
-          <button type="submit">Filtrar</button>
-          <button type="button" onClick={clearFilters} className="btn-secondary">
-            Limpiar
-          </button>
+          <button type="submit" className="btn-primary">Filtrar</button>
+          <button type="button" onClick={clearFilters} className="btn-secondary">Limpiar</button>
         </div>
       </form>
 
       <div className="card" data-testid="property-list">
-        <h2>Propiedades ({total})</h2>
-        <div className="list">
-          {properties.map((property) => (
-            <div key={property.id} className="property-row">
-              <strong>{property.title}</strong>
-              <span className={`badge badge-${property.status}`}>{property.status}</span>
-              <span className="muted">
-                {property.property_type} · {property.operation_type}
-              </span>
-              <span className="muted">
-                {property.city ?? "—"} · {property.price_amount ?? "—"} {property.price_currency ?? ""}
-              </span>
-              <div className="actions">
-                <button type="button" onClick={() => startEdit(property)}>
-                  Editar
-                </button>
-                {property.status !== "published" && (
-                  <button type="button" onClick={() => publishProperty(property)}>
-                    Publicar
-                  </button>
-                )}
-                <button type="button" onClick={() => selectPropertyForMedia(property)}>
-                  Media
-                </button>
-                <button type="button" onClick={() => selectPropertyForContent(property)}>
-                  Contenido
-                </button>
-                <button type="button" onClick={() => deleteProperty(property)} className="btn-danger">
-                  Eliminar propiedad
-                </button>
-              </div>
-            </div>
-          ))}
-          {properties.length === 0 && <p className="muted">Sin propiedades todavía.</p>}
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          <h2 className="panel-title">Inventario</h2>
+          <span className="badge badge-published">{total} registros</span>
         </div>
-        <div className="pagination" data-testid="pagination">
-          <button type="button" onClick={() => goToPage(page - 1)} disabled={page <= 1}>
-            Anterior
-          </button>
-          <span className="muted">
-            Página {page} de {totalPages}
-          </span>
-          <button type="button" onClick={() => goToPage(page + 1)} disabled={page >= totalPages}>
-            Siguiente
-          </button>
+        <div className="p-5">
+          <div className="list">
+            {properties.map((property) => (
+              <div key={property.id} className="property-row">
+                <div className="min-w-40">
+                  <strong className="text-sm text-slate-900">{property.title}</strong>
+                  <div className="muted">
+                    {property.property_type} · {property.operation_type}
+                  </div>
+                </div>
+                <span className={`badge badge-${property.status}`}>{property.status}</span>
+                <span className="muted">
+                  {property.city ?? "—"} · {property.price_amount ?? "—"} {property.price_currency ?? ""}
+                </span>
+                <div className="actions">
+                  <button type="button" onClick={() => startEdit(property)} className="btn-secondary">Editar</button>
+                  {property.status !== "published" && (
+                    <button type="button" onClick={() => publishProperty(property)} className="btn-primary">Publicar</button>
+                  )}
+                  <button type="button" onClick={() => selectPropertyForMedia(property)} className="btn-secondary">Media</button>
+                  <button type="button" onClick={() => selectPropertyForContent(property)} className="btn-secondary">Contenido</button>
+                  <button type="button" onClick={() => deleteProperty(property)} className="btn-danger">Eliminar propiedad</button>
+                </div>
+              </div>
+            ))}
+            {properties.length === 0 && <p className="muted">Sin propiedades todavía.</p>}
+          </div>
+          <div className="pagination" data-testid="pagination">
+            <button type="button" onClick={() => goToPage(page - 1)} disabled={page <= 1} className="btn-secondary">Anterior</button>
+            <span className="muted">
+              Página {page} de {totalPages}
+            </span>
+            <button type="button" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} className="btn-secondary">Siguiente</button>
+          </div>
         </div>
       </div>
 
       {selectedPropertyId && (
         <div className="card" data-testid="media-panel">
-          <h3>Multimedia: {selectedProperty?.title ?? ""}</h3>
-          <form onSubmit={submitMedia} className="form-grid">
-            <label className="field">
-              Tipo de archivo
-              <select value={mediaKind} onChange={(e) => setMediaKind(e.target.value)}>
-                {MEDIA_KINDS.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              Estado del archivo
-              <select value={mediaState} onChange={(e) => setMediaState(e.target.value)}>
-                {MEDIA_STATES.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              Archivo
-              <input type="file" onChange={(e) => setMediaFile(e.target.files?.[0] ?? null)} />
-            </label>
-            <div className="actions">
-              <button type="submit" disabled={uploadingMedia}>
-                Subir archivo
-              </button>
-            </div>
-          </form>
-
-          <div className="list" data-testid="media-list">
-            {media.map((item) => (
-              <div key={item.id} className="property-row media-row">
-                {item.kind === "image" && item.signed_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className="media-thumb" src={item.signed_url} alt={item.storage_path} />
-                )}
-                {item.kind === "video" && item.signed_url && (
-                  <a className="muted" href={item.signed_url} target="_blank" rel="noreferrer">
-                    Ver video
-                  </a>
-                )}
-                <span className="badge">{item.kind}</span>
-                <span className="badge">{item.state}</span>
-                <span className="muted">{item.storage_path}</span>
-                <div className="actions">
-                  <button type="button" onClick={() => markMediaProcessed(item.id)}>
-                    Marcar procesada
-                  </button>
-                  <button type="button" onClick={() => deleteMedia(item.id)} className="btn-danger">
-                    Eliminar media
-                  </button>
-                </div>
+          <div className="border-b border-slate-100 px-5 py-4">
+            <h3 className="panel-title">Multimedia: {selectedProperty?.title ?? ""}</h3>
+          </div>
+          <div className="p-5">
+            <form onSubmit={submitMedia} className="form-grid">
+              <label className="field">
+                Tipo de archivo
+                <select className="input" value={mediaKind} onChange={(e) => setMediaKind(e.target.value)}>
+                  {MEDIA_KINDS.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                Estado del archivo
+                <select className="input" value={mediaState} onChange={(e) => setMediaState(e.target.value)}>
+                  {MEDIA_STATES.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                Archivo
+                <input className="input" type="file" onChange={(e) => setMediaFile(e.target.files?.[0] ?? null)} />
+              </label>
+              <div className="actions sm:col-span-2 lg:col-span-3">
+                <button type="submit" disabled={uploadingMedia} className="btn-primary">Subir archivo</button>
               </div>
-            ))}
-            {media.length === 0 && <p className="muted">Sin archivos para esta propiedad.</p>}
+            </form>
+
+            <div className="list mt-5" data-testid="media-list">
+              {media.map((item) => (
+                <div key={item.id} className="property-row media-row">
+                  {item.kind === "image" && item.signed_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className="media-thumb" src={item.signed_url} alt={item.storage_path} />
+                  )}
+                  {item.kind === "video" && item.signed_url && (
+                    <a className="muted font-medium text-indigo-600 hover:underline" href={item.signed_url} target="_blank" rel="noreferrer">
+                      Ver video
+                    </a>
+                  )}
+                  <span className="badge badge-archived">{item.kind}</span>
+                  <span className="badge badge-draft">{item.state}</span>
+                  <span className="muted">{item.storage_path}</span>
+                  <div className="actions">
+                    <button type="button" onClick={() => markMediaProcessed(item.id)} className="btn-secondary">Marcar procesada</button>
+                    <button type="button" onClick={() => deleteMedia(item.id)} className="btn-danger">Eliminar media</button>
+                  </div>
+                </div>
+              ))}
+              {media.length === 0 && <p className="muted">Sin archivos para esta propiedad.</p>}
+            </div>
           </div>
         </div>
       )}
 
       {selectedPropertyId && (
         <div className="card" data-testid="content-panel">
-          <h3>Contenido IA: {selectedProperty?.title ?? ""}</h3>
-          <p className="muted">
-            Copies adaptados por canal (Facebook, Instagram, WhatsApp) con hashtags y CTA.
-          </p>
-          <form onSubmit={generateContent} className="form-grid">
-            <label className="field">
-              Canal
-              <select value={contentChannel} onChange={(e) => setContentChannel(e.target.value)}>
-                {CONTENT_CHANNELS.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="actions">
-              <button type="submit" disabled={generating}>
-                Generar copy
-              </button>
-            </div>
-          </form>
-
-          <div className="list" data-testid="generation-list">
-            {generations.map((gen) => (
-              <div key={gen.id} className="property-row generation-row">
-                <span className="badge">{gen.channel}</span>
-                <span className="muted">
-                  {new Date(gen.created_at).toLocaleString()} · {gen.provider}
-                </span>
-                <pre className="generation-copy">{gen.output?.copy ?? ""}</pre>
-                <div className="hashtag-row">
-                  {(gen.output?.hashtags ?? []).map((tag) => (
-                    <span key={tag} className="badge">
-                      {tag}
-                    </span>
+          <div className="border-b border-slate-100 px-5 py-4">
+            <h3 className="panel-title">Contenido IA: {selectedProperty?.title ?? ""}</h3>
+            <p className="panel-subtitle mt-1">
+              Copies adaptados por canal (Facebook, Instagram, WhatsApp) con hashtags y CTA.
+            </p>
+          </div>
+          <div className="p-5">
+            <form onSubmit={generateContent} className="flex flex-wrap items-end gap-3">
+              <label className="field">
+                Canal
+                <select className="input w-auto" value={contentChannel} onChange={(e) => setContentChannel(e.target.value)}>
+                  {CONTENT_CHANNELS.map((item) => (
+                    <option key={item} value={item}>{item}</option>
                   ))}
+                </select>
+              </label>
+              <button type="submit" disabled={generating} className="btn-primary">Generar copy</button>
+            </form>
+
+            <div className="list mt-5" data-testid="generation-list">
+              {generations.map((gen) => (
+                <div key={gen.id} className="property-row generation-row">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="badge badge-contacted">{gen.channel}</span>
+                    <span className="muted">
+                      {new Date(gen.created_at).toLocaleString()} · {gen.provider}
+                    </span>
+                  </div>
+                  <pre className="generation-copy">{gen.output?.copy ?? ""}</pre>
+                  <div className="hashtag-row">
+                    {(gen.output?.hashtags ?? []).map((tag) => (
+                      <span key={tag} className="badge badge-archived">{tag}</span>
+                    ))}
+                  </div>
+                  <p className="muted">CTA: {gen.output?.cta ?? ""}</p>
                 </div>
-                <p className="muted">CTA: {gen.output?.cta ?? ""}</p>
-              </div>
-            ))}
-            {generations.length === 0 && <p className="muted">Sin generaciones todavía.</p>}
+              ))}
+              {generations.length === 0 && <p className="muted">Sin generaciones todavía.</p>}
+            </div>
           </div>
         </div>
       )}

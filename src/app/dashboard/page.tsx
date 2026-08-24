@@ -1,14 +1,14 @@
 import React from "react";
-import Link from "next/link";
 import { DashboardSummaryView } from "@/components/dashboard/dashboard-summary";
 
 export default function DashboardPage() {
   return (
-    <main className="container">
-      <h1>Dashboard</h1>
-      <p>Resumen con datos reales de tu cuenta.</p>
-      <Link href="/">Volver al inicio</Link>
+    <div className="grid gap-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard</h1>
+        <p className="panel-subtitle">Resumen con datos reales de tu cuenta.</p>
+      </header>
       <DashboardSummaryView />
-    </main>
+    </div>
   );
 }

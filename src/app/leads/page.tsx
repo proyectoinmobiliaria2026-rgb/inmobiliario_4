@@ -1,13 +1,14 @@
-import Link from "next/link";
+import React from "react";
 import { LeadsWorkbench } from "@/components/leads/leads-workbench";
 
 export default function LeadsPage() {
   return (
-    <main className="container">
-      <h1>Seguimiento de leads</h1>
-      <p>Organiza contactos, estados y próximos seguimientos.</p>
-      <Link href="/">Volver al inicio</Link>
+    <div className="grid gap-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">CRM de Leads</h1>
+        <p className="panel-subtitle">Organiza contactos, estados y próximos seguimientos.</p>
+      </header>
       <LeadsWorkbench />
-    </main>
+    </div>
   );
 }

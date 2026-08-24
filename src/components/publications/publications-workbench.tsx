@@ -29,14 +29,17 @@ function PublicationRow({ publication, propertyTitle, onSchedule, onPublish, onC
 }) {
   const [dateValue, setDateValue] = useState(toInputDate(publication.scheduled_for));
   return <div className="property-row publication-row">
-    <div><strong>{propertyTitle}</strong><div className="muted">{publication.platform} · {truncate(publication.payload?.copy ?? "")}</div></div>
+    <div className="min-w-40">
+      <strong className="text-sm text-slate-900">{propertyTitle}</strong>
+      <div className="muted">{publication.platform} · {truncate(publication.payload?.copy ?? "")}</div>
+    </div>
     <span className={`badge badge-${publication.status}`}>{publication.status}</span>
     <span className="muted">{publication.status === "scheduled" && publication.scheduled_for ? `Programada: ${new Date(publication.scheduled_for).toLocaleString()}` : publication.executed_at ? `Ejecutada: ${new Date(publication.executed_at).toLocaleString()}` : "Sin ejecutar"}</span>
     <div className="actions">
-      <input aria-label={`Fecha de publicación ${publication.id}`} type="datetime-local" value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
-      <button type="button" onClick={() => onSchedule(dateValue)}>Programar</button>
-      <button type="button" onClick={onPublish}>Publicar ahora</button>
-      <button type="button" className="btn-secondary" onClick={onCancel}>Cancelar</button>
+      <input className="input w-auto py-1.5 text-xs" aria-label={`Fecha de publicación ${publication.id}`} type="datetime-local" value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
+      <button type="button" className="btn-secondary" onClick={() => onSchedule(dateValue)}>Programar</button>
+      <button type="button" className="btn-primary" onClick={onPublish}>Publicar ahora</button>
+      <button type="button" className="btn-ghost" onClick={onCancel}>Cancelar</button>
       <button type="button" className="btn-danger" onClick={onDelete}>Eliminar</button>
     </div>
   </div>;
@@ -189,20 +192,68 @@ export function PublicationsWorkbench() {
     await loadPublications(); await loadJobs();
   }
 
-  if (!session) return <section className="workbench"><div className="card"><h2>Iniciar sesión</h2><form onSubmit={handleLogin} className="form-grid"><label className="field">Email<input aria-label="Email" type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} /></label><label className="field">Password<input aria-label="Password" type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} /></label><div className="actions"><button type="submit">Iniciar sesión</button></div></form>{error && <div className="notice notice-error">{error}</div>}</div></section>;
+  if (!session) return (
+    <section className="workbench">
+      <div className="card card-pad mx-auto w-full max-w-md">
+        <h2 className="panel-title">Iniciar sesión</h2>
+        <p className="panel-subtitle mt-1">Accede para programar tus publicaciones.</p>
+        <form onSubmit={handleLogin} className="mt-4 grid gap-4">
+          <label className="field">Email<input className="input" aria-label="Email" type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} /></label>
+          <label className="field">Password<input className="input" aria-label="Password" type="password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} /></label>
+          <div className="actions"><button type="submit" className="btn-primary w-full">Iniciar sesión</button></div>
+        </form>
+        {error && <div className="notice notice-error mt-4">{error}</div>}
+      </div>
+    </section>
+  );
 
   return <section className="workbench">
     {error && <div className="notice notice-error">{error}</div>}{notice && <div className="notice">{notice}</div>}
-    <form className="card" onSubmit={createPublication} data-testid="publication-form"><h2>Nueva publicación</h2><div className="form-grid">
-      <label className="field">Propiedad<select aria-label="Propiedad" value={form.propertyId} onChange={(event) => updateField("propertyId", event.target.value)}><option value="">Selecciona...</option>{properties.map((property) => <option key={property.id} value={property.id}>{property.title}</option>)}</select></label>
-      <label className="field">Canal<select aria-label="Canal" value={form.platform} onChange={(event) => updateField("platform", event.target.value as PublicationPlatform)}>{PLATFORMS.map((platform) => <option key={platform}>{platform}</option>)}</select></label>
-      <label className="field">Programar para (opcional)<input aria-label="Programar para" type="datetime-local" value={form.scheduledFor} onChange={(event) => updateField("scheduledFor", event.target.value)} /></label>
-      <label className="field form-span">Copia<textarea aria-label="Copia" rows={4} value={form.copy} onChange={(event) => updateField("copy", event.target.value)} /></label>
-      <label className="field">Hashtags<input aria-label="Hashtags" placeholder="casa, monterrey" value={form.hashtags} onChange={(event) => updateField("hashtags", event.target.value)} /></label>
-      <label className="field">CTA<input aria-label="CTA" value={form.cta} onChange={(event) => updateField("cta", event.target.value)} /></label>
-    </div><div className="actions"><button type="button" className="btn-secondary" onClick={() => void fetchAiCopy()}>Traer copia IA</button><button type="submit">{form.scheduledFor ? "Crear y programar" : "Crear borrador"}</button></div></form>
-    <div className="card" data-testid="scheduler-panel"><h2>Scheduler</h2><p className="muted">{jobs.length} trabajos pendientes</p><div className="list">{jobs.map((job) => <div className="property-row" key={job.id}><div><strong>{job.job_type}</strong><div className="muted">Intentos: {job.attempts}/{job.max_attempts} · Próximo: {job.next_retry_at ? new Date(job.next_retry_at).toLocaleString() : "-"}</div></div></div>)}{jobs.length === 0 && <p className="muted">Sin trabajos pendientes.</p>}</div><div className="actions"><button type="button" data-testid="scheduler-run" onClick={() => void runScheduler()}>Ejecutar scheduler</button></div></div>
-    <form className="card" onSubmit={(event) => { event.preventDefault(); void loadPublications(); }} data-testid="publication-filters"><h2>Publicaciones</h2><div className="form-grid"><label className="field">Filtrar por estado<select aria-label="Filtrar estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="">Todos</option>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select></label><label className="field">Filtrar por canal<select aria-label="Filtrar canal" value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)}><option value="">Todos</option>{PLATFORMS.map((platform) => <option key={platform}>{platform}</option>)}</select></label></div><div className="actions"><button type="submit">Filtrar</button><button type="button" className="btn-secondary" onClick={() => { setStatusFilter(""); setPlatformFilter(""); }}>Limpiar</button></div></form>
-    <div className="card" data-testid="publication-list"><h2>Lista ({publications.length})</h2><div className="list">{publications.map((publication) => <PublicationRow key={publication.id} publication={publication} propertyTitle={properties.find((property) => property.id === publication.property_id)?.title ?? publication.property_id} onSchedule={(localValue) => void scheduleRow(publication, localValue)} onPublish={() => void rowAction(publication, "publish")} onCancel={() => void rowAction(publication, "cancel")} onDelete={() => void deleteRow(publication)} />)}{publications.length === 0 && <p className="muted">No hay publicaciones para mostrar.</p>}</div></div>
+    <div className="grid gap-6 xl:grid-cols-5">
+      <form className="card card-pad xl:col-span-3" onSubmit={createPublication} data-testid="publication-form">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="panel-title">Nueva publicación</h2>
+          <span className="badge badge-scheduled">Social</span>
+        </div>
+        <div className="form-grid">
+          <label className="field">Propiedad<select className="input" aria-label="Propiedad" value={form.propertyId} onChange={(event) => updateField("propertyId", event.target.value)}><option value="">Selecciona...</option>{properties.map((property) => <option key={property.id} value={property.id}>{property.title}</option>)}</select></label>
+          <label className="field">Canal<select className="input" aria-label="Canal" value={form.platform} onChange={(event) => updateField("platform", event.target.value as PublicationPlatform)}>{PLATFORMS.map((platform) => <option key={platform}>{platform}</option>)}</select></label>
+          <label className="field">Programar para (opcional)<input className="input" aria-label="Programar para" type="datetime-local" value={form.scheduledFor} onChange={(event) => updateField("scheduledFor", event.target.value)} /></label>
+          <label className="field form-span">Copia<textarea className="input" aria-label="Copia" rows={4} value={form.copy} onChange={(event) => updateField("copy", event.target.value)} /></label>
+          <label className="field">Hashtags<input className="input" aria-label="Hashtags" placeholder="casa, monterrey" value={form.hashtags} onChange={(event) => updateField("hashtags", event.target.value)} /></label>
+          <label className="field">CTA<input className="input" aria-label="CTA" value={form.cta} onChange={(event) => updateField("cta", event.target.value)} /></label>
+        </div>
+        <div className="actions"><button type="button" className="btn-secondary" onClick={() => void fetchAiCopy()}>Traer copia IA</button><button type="submit" className="btn-primary">{form.scheduledFor ? "Crear y programar" : "Crear borrador"}</button></div>
+      </form>
+      <div className="card card-pad overflow-hidden bg-slate-900 text-white xl:col-span-2" data-testid="scheduler-panel">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold tracking-tight">Scheduler</h2>
+          <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">{jobs.length} pendientes</span>
+        </div>
+        <div className="mt-4 grid gap-2.5">
+          {jobs.map((job) => <div className="rounded-xl border border-slate-700/70 bg-slate-800/60 px-4 py-3" key={job.id}>
+            <strong className="text-sm">{job.job_type}</strong>
+            <div className="text-xs text-slate-400">Intentos: {job.attempts}/{job.max_attempts} · Próximo: {job.next_retry_at ? new Date(job.next_retry_at).toLocaleString() : "-"}</div>
+          </div>)}
+          {jobs.length === 0 && <p className="text-sm text-slate-400">Sin trabajos pendientes.</p>}
+        </div>
+        <div className="mt-4"><button type="button" className="btn w-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 hover:bg-emerald-400" data-testid="scheduler-run" onClick={() => void runScheduler()}>Ejecutar scheduler</button></div>
+      </div>
+    </div>
+    <form className="card card-pad" onSubmit={(event) => { event.preventDefault(); void loadPublications(); }} data-testid="publication-filters">
+      <h2 className="panel-title mb-4">Publicaciones</h2>
+      <div className="form-grid">
+        <label className="field">Filtrar por estado<select className="input" aria-label="Filtrar estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="">Todos</option>{STATUSES.map((status) => <option key={status}>{status}</option>)}</select></label>
+        <label className="field">Filtrar por canal<select className="input" aria-label="Filtrar canal" value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)}><option value="">Todos</option>{PLATFORMS.map((platform) => <option key={platform}>{platform}</option>)}</select></label>
+      </div>
+      <div className="actions"><button type="submit" className="btn-primary">Filtrar</button><button type="button" className="btn-secondary" onClick={() => { setStatusFilter(""); setPlatformFilter(""); }}>Limpiar</button></div>
+    </form>
+    <div className="card" data-testid="publication-list">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <h2 className="panel-title">Cola de publicaciones</h2>
+        <span className="badge badge-scheduled">{publications.length} registros</span>
+      </div>
+      <div className="p-5"><div className="list">{publications.map((publication) => <PublicationRow key={publication.id} publication={publication} propertyTitle={properties.find((property) => property.id === publication.property_id)?.title ?? publication.property_id} onSchedule={(localValue) => void scheduleRow(publication, localValue)} onPublish={() => void rowAction(publication, "publish")} onCancel={() => void rowAction(publication, "cancel")} onDelete={() => void deleteRow(publication)} />)}{publications.length === 0 && <p className="muted">No hay publicaciones para mostrar.</p>}</div></div>
+    </div>
   </section>;
 }

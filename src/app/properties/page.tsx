@@ -1,14 +1,14 @@
 import React from "react";
-import Link from "next/link";
 import { PropertiesWorkbench } from "@/components/properties/properties-workbench";
 
 export default function PropertiesPage() {
   return (
-    <main className="container">
-      <h1>Propiedades</h1>
-      <p>Administra tus propiedades y su multimedia.</p>
-      <Link href="/">Volver al inicio</Link>
+    <div className="grid gap-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Propiedades</h1>
+        <p className="panel-subtitle">Inventario, multimedia y contenido con IA para cada inmueble.</p>
+      </header>
       <PropertiesWorkbench />
-    </main>
+    </div>
   );
 }

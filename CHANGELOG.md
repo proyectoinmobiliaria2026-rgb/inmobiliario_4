@@ -208,3 +208,14 @@ All notable changes to this project will be documented in this file.
 - Unit tests: 36/36 passing (5 publication validator tests, publications and scheduler route integration tests).
 - Typecheck (`tsc --noEmit`) and ESLint clean.
 - E2E suite: 7/7 passing against production build, including full publications flow (create draft, schedule, scheduler run to published, cancel, delete).
+
+## [0.12.0] - 2026-08-24
+
+### Added
+
+- Full UI redesign with Tailwind CSS v4:
+  - Tailwind + PostCSS pipeline (`postcss.config.mjs`) and design system in `globals.css` (cards, inputs, buttons, badges for every domain status, notices, rows).
+  - Professional top navbar (`src/components/layout/navbar.tsx`): CFDIGITAL brand, responsive module links with active state, session chip with avatar and logout.
+  - Home `/` transformed into a real control panel: dark hero, live KPI cards from `/api/dashboard/summary` (graceful logged-out state) and visual shortcuts to Propiedades, CRM de Leads, Programador de Publicaciones and Dashboard.
+  - Dashboard, properties, leads and publications modules restyled with modern cards/rows, status badges, icon stat grid and dark scheduler panel.
+  - All e2e hooks preserved (testids, row classes, labels, button names); vitest JSX automatic runtime enabled.
