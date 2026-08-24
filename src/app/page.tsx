@@ -43,15 +43,23 @@ const SHORTCUTS = [
 
 export default function HomePage() {
   return (
-    <div className="grid gap-8">
-      <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 px-6 py-10 shadow-xl sm:px-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-400">Plataforma inmobiliaria</p>
-        <h1 className="mt-2 text-4xl font-black tracking-tight text-white sm:text-5xl">CFDIGITAL</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
-          Gestiona propiedades, nutre tus leads y programa publicaciones en redes sociales desde un solo panel
-          profesional.
-        </p>
-      </section>
+    <div className="relative">
+      <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden bg-gradient-to-b from-white via-indigo-50/70 to-slate-200">
+        <div className="absolute inset-0 bg-[radial-gradient(#c7d2fe_1px,transparent_1px)] [background-size:26px_26px] opacity-50" />
+        <div className="absolute -top-40 left-1/2 h-96 w-[70rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-indigo-300/50 via-violet-300/40 to-sky-300/50 blur-3xl" />
+        <div className="absolute top-1/2 -left-48 h-96 w-96 rounded-full bg-violet-200/50 blur-3xl" />
+        <div className="absolute -right-48 bottom-0 h-96 w-96 rounded-full bg-sky-200/50 blur-3xl" />
+      </div>
+
+      <div className="grid gap-8">
+        <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 px-6 py-10 shadow-xl sm:px-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-400">Plataforma inmobiliaria</p>
+          <h1 className="mt-2 text-4xl font-black tracking-tight text-white sm:text-5xl">CFDIGITAL</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
+            Gestiona propiedades, nutre tus leads y programa publicaciones en redes sociales desde un solo panel
+            profesional.
+          </p>
+        </section>
 
       <HomeOverview />
 
@@ -77,6 +85,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      </div>
     </div>
   );
 }
