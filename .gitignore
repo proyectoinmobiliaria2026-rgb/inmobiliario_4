@@ -34,3 +34,5 @@ supabase/seed-output.json
 
 # supabase cli local state
 supabase/.temp
+.vercel
+.env*
