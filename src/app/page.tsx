@@ -8,6 +8,7 @@ export default function HomePage() {
       <p>Fase 3 en progreso: propiedades, multimedia y dashboard.</p>
       <Link href="/properties">Ir al modulo de propiedades</Link>
       <Link href="/dashboard">Ver dashboard</Link>
+      <Link href="/leads">Seguimiento de leads</Link>
     </main>
   );
 }

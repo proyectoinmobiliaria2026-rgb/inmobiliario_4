@@ -160,3 +160,24 @@ All notable changes to this project will be documented in this file.
   - `COOKIE_SECURE` env override for session cookies (auto-secure in production).
 - E2E suite now runs against production build (`next build && next start`) with retry and test-data cleanup helpers.
 - Tests: mock provider unit tests, prompt builder test, content routes integration tests, AI content e2e (API + UI).
+
+## [0.10.0] - 2026-08-24
+
+### Added
+
+- Leads follow-up module (Fase 9):
+  - Lead types in `src/lib/types/lead.ts` (status lifecycle: new, contacted, qualified, won, lost).
+  - Lead validators with business rules (required contact channel, email format, lengths, valid dates/status) in `src/lib/validators/lead.ts`.
+  - Lead CRUD service with filters, search and pagination in `src/lib/services/lead-service.ts`.
+  - Lead API routes:
+    - `GET/POST /api/leads`
+    - `GET/PATCH/DELETE /api/leads/:id`
+  - Follow-up UI at `/leads` (`leads-workbench.tsx`): lead form, status quick-change, search/status filters, next follow-up dates.
+  - Versioned migration `20260824100000_phase9_leads.sql` with DB-level check constraints, follow-up indexes and per-owner RLS policy (applied to remote).
+- Lead badge styles for each lead status in `globals.css`.
+
+### Verified
+
+- Unit tests: 24/24 passing (including 4 lead validator tests).
+- Typecheck (`tsc --noEmit`) and ESLint clean.
+- E2E suite: 6/6 passing against production build.
