@@ -53,4 +53,5 @@ Construir CFDIGITAL como una sola aplicacion full-stack en un solo repositorio, 
 - Fase 3: completada (modulo IA desacoplado via AIService y deployment preparado para GitHub/Vercel).
 - Fase 4-8: completadas (auth por sesion, media con Storage, dashboard real, contenido IA).
 - Fase 9: completada (seguimiento de leads: tipos, validadores, servicio CRUD, API y UI en `/leads`, migracion con constraints y RLS por dueno aplicada en remoto).
-- Fase 10+: modulos funcionales por prioridad de negocio.
+- Fase 10: completada (publicaciones y scheduler: tipos, validadores, servicios con transiciones de estado, API CRUD + acciones y endpoint de scheduler con soporte cron, UI en `/publications`, migracion con constraints aplicada en remoto).
+- Fase 11+: modulos funcionales por prioridad de negocio.

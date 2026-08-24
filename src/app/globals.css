@@ -203,6 +203,21 @@ button:disabled {
   color: #991b1b;
 }
 
+.badge-scheduled {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-cancelled {
+  background: #e5e7eb;
+  color: #374151;
+}
+
 .muted {
   color: #6b7280;
   font-size: 0.85rem;

@@ -181,3 +181,30 @@ All notable changes to this project will be documented in this file.
 - Unit tests: 24/24 passing (including 4 lead validator tests).
 - Typecheck (`tsc --noEmit`) and ESLint clean.
 - E2E suite: 6/6 passing against production build.
+
+## [0.11.0] - 2026-08-24
+
+### Added
+
+- Publications + social scheduler module (Fase 10):
+  - Types in `src/lib/types/publication.ts` (status lifecycle: draft, scheduled, published, failed, cancelled; platforms facebook/instagram/whatsapp; scheduler job records and run summary).
+  - Validators with business rules (required property/platform, platform/mode whitelists, hashtag normalization and limits, copy/cta lengths, schedule date sanity) in `src/lib/validators/publication.ts`.
+  - Publication service with status-transition guards (schedule from draft/failed, publish from draft/scheduled/failed, cancel from non-terminal states) in `src/lib/services/publication-service.ts`.
+  - Scheduler service in `src/lib/services/scheduler-service.ts`:
+    - `publish_publication` job enqueue/cancel tied to each publication.
+    - `runDueSchedulerJobs` batch processor with attempt tracking, exponential-ish backoff (5 min per attempt), `scheduler_runs` audit rows and failure escalation to `failed` publication.
+  - API routes:
+    - `GET/POST /api/publications`
+    - `GET/PATCH/DELETE /api/publications/:id`
+    - `POST /api/publications/:id/schedule`, `/publish`, `/cancel`
+    - `GET /api/scheduler/jobs`
+    - `POST /api/scheduler/run` (session auth or `x-cron-secret` header for Vercel Cron via service-role client).
+  - Publications UI at `/publications` (`publications-workbench.tsx`): property + channel + copy form with "Traer copia IA" prefill, create draft or create+schedule, per-row schedule/publish-now/cancel/delete actions, status/platform filters, pending jobs panel and manual scheduler trigger.
+  - Versioned migration `20260824110000_phase10_publications_scheduler.sql` with status/platform/mode check constraints, scheduled-date consistency check, scheduler job constraints and due-job indexes (applied to remote).
+- Badge styles for scheduled/failed/cancelled publications in `globals.css`.
+
+### Verified
+
+- Unit tests: 36/36 passing (5 publication validator tests, publications and scheduler route integration tests).
+- Typecheck (`tsc --noEmit`) and ESLint clean.
+- E2E suite: 7/7 passing against production build, including full publications flow (create draft, schedule, scheduler run to published, cancel, delete).
