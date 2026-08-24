@@ -15,12 +15,12 @@ Estado: aprobado e inicializado en Fase 1.
 
 - Node.js: 24.19.0 (entorno actual de desarrollo)
 - npm: 12.0.2
-- Next.js: 15.5.3
+- Next.js: 15.5.23 (parche CVE-2025-66478, requerido por Vercel)
 - React: 19.1.1
 - React DOM: 19.1.1
 - TypeScript: 5.9.2
 - ESLint: 9.34.0
-- eslint-config-next: 15.5.3
+- eslint-config-next: 15.5.23
 - Vitest: 3.2.4
 - Playwright: 1.55.0
 - Supabase JS: 2.57.4
