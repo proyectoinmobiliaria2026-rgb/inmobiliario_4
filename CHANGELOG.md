@@ -219,3 +219,16 @@ All notable changes to this project will be documented in this file.
   - Home `/` transformed into a real control panel: dark hero, live KPI cards from `/api/dashboard/summary` (graceful logged-out state) and visual shortcuts to Propiedades, CRM de Leads, Programador de Publicaciones and Dashboard.
   - Dashboard, properties, leads and publications modules restyled with modern cards/rows, status badges, icon stat grid and dark scheduler panel.
   - All e2e hooks preserved (testids, row classes, labels, button names); vitest JSX automatic runtime enabled.
+
+## [0.13.0] - 2026-08-24
+
+### Added
+
+- Property form overhaul driven by business feedback (Fase 11):
+  - Spanish-first UI: property types (Departamento/Casa/Terreno/Oficina/Local comercial), operations (Venta/Renta/Renta temporal) and statuses (Borrador/Publicada/Archivada) shown in Spanish (values unchanged for API compatibility).
+  - AI-generated title and description: new `POST /api/properties/ai-listing` endpoint + `AIService.generateListing` (mock and OpenAI providers, Spanish real-estate prompt); "Generar con IA" button fills both fields from type, operation, city, price, amenities and requirements.
+  - Amenities checkbox chips (roof garden, vigilancia 24 horas, lavandería, salón de eventos, gimnasio, alberca, asador, área de juegos, pet friendly, jardín, elevador, cisterna) with checkmarks.
+  - Rental requirements checkbox chips (Sin aval / Aval con inmueble / 2 depósitos).
+  - Removed the Área (m²) field from the form (kept optional at API level for compatibility).
+  - New columns `amenities text[]` and `rental_requirements text[]` on `properties` (migration `20260824120000_phase11_property_details.sql`, applied to remote).
+- Printable property sheet at `/properties/:id/ficha` with "Generar PDF" button per row (browser print-to-PDF, print-optimized styles).

@@ -1,6 +1,18 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import {
+  AMENITY_LABELS,
+  AMENITY_OPTIONS,
+  OPERATION_TYPE_LABELS,
+  OPERATION_TYPES,
+  PROPERTY_STATUS_LABELS,
+  PROPERTY_STATUSES,
+  PROPERTY_TYPE_LABELS,
+  PROPERTY_TYPES,
+  RENTAL_REQUIREMENT_LABELS,
+  RENTAL_REQUIREMENT_OPTIONS
+} from "@/lib/types/property";
 
 type SessionUser = {
   id: string;
@@ -21,9 +33,10 @@ type PropertyItem = {
   bedrooms: number | null;
   bathrooms: number | null;
   parking_spots: number | null;
-  area_m2: number | null;
   price_amount: number | null;
   price_currency: string | null;
+  amenities: string[] | null;
+  rental_requirements: string[] | null;
 };
 
 type MediaItem = {
@@ -92,14 +105,12 @@ type PropertyFormState = {
   bedrooms: string;
   bathrooms: string;
   parkingSpots: string;
-  areaM2: string;
   priceAmount: string;
   priceCurrency: string;
+  amenities: string[];
+  rentalRequirements: string[];
 };
 
-const PROPERTY_TYPES = ["apartment", "house", "land", "office", "commercial"];
-const OPERATION_TYPES = ["sale", "rent", "temporary_rent"];
-const PROPERTY_STATUSES = ["draft", "published", "archived"];
 const MEDIA_KINDS = ["image", "video"];
 const MEDIA_STATES = ["original", "processed", "edited", "generated"];
 const CURRENCIES = ["USD", "MXN", "EUR"];
@@ -117,9 +128,10 @@ const EMPTY_FORM: PropertyFormState = {
   bedrooms: "",
   bathrooms: "",
   parkingSpots: "",
-  areaM2: "",
   priceAmount: "",
-  priceCurrency: "USD"
+  priceCurrency: "MXN",
+  amenities: [],
+  rentalRequirements: []
 };
 
 function toFormState(property: PropertyItem): PropertyFormState {
@@ -136,9 +148,10 @@ function toFormState(property: PropertyItem): PropertyFormState {
     bedrooms: property.bedrooms?.toString() ?? "",
     bathrooms: property.bathrooms?.toString() ?? "",
     parkingSpots: property.parking_spots?.toString() ?? "",
-    areaM2: property.area_m2?.toString() ?? "",
     priceAmount: property.price_amount?.toString() ?? "",
-    priceCurrency: property.price_currency ?? "USD"
+    priceCurrency: property.price_currency ?? "MXN",
+    amenities: property.amenities ?? [],
+    rentalRequirements: property.rental_requirements ?? []
   };
 }
 
@@ -149,10 +162,10 @@ function validatePropertyForm(form: PropertyFormState): string[] {
   if (title.length < 5 || title.length > 120) {
     errors.push("El título debe tener entre 5 y 120 caracteres");
   }
-  if (!PROPERTY_TYPES.includes(form.propertyType)) {
+  if (!(PROPERTY_TYPES as readonly string[]).includes(form.propertyType)) {
     errors.push("Selecciona un tipo de propiedad válido");
   }
-  if (!OPERATION_TYPES.includes(form.operationType)) {
+  if (!(OPERATION_TYPES as readonly string[]).includes(form.operationType)) {
     errors.push("Selecciona una operación válida");
   }
 
@@ -165,12 +178,12 @@ function validatePropertyForm(form: PropertyFormState): string[] {
     }
   }
 
-  for (const field of ["areaM2", "priceAmount"] as const) {
+  for (const field of ["priceAmount"] as const) {
     const raw = form[field].trim();
     if (raw === "") continue;
     const value = Number(raw);
     if (!Number.isFinite(value) || value < 0) {
-      errors.push("Área y precio deben ser números mayores o iguales a 0");
+      errors.push("El precio debe ser un número mayor o igual a 0");
     }
   }
 
@@ -209,10 +222,13 @@ function buildPropertyPayload(form: PropertyFormState): Record<string, unknown> 
   const country = form.country.trim();
   if (country) payload.country = country;
 
-  for (const key of ["bedrooms", "bathrooms", "parkingSpots", "areaM2", "priceAmount"] as const) {
+  for (const key of ["bedrooms", "bathrooms", "parkingSpots", "priceAmount"] as const) {
     const raw = form[key].trim();
     if (raw !== "") payload[key] = Number(raw);
   }
+
+  if (form.amenities.length > 0) payload.amenities = form.amenities;
+  if (form.rentalRequirements.length > 0) payload.rentalRequirements = form.rentalRequirements;
 
   return payload;
 }
@@ -244,6 +260,7 @@ export function PropertiesWorkbench() {
   const [contentChannel, setContentChannel] = useState("facebook");
   const [generations, setGenerations] = useState<GenerationItem[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [generatingListing, setGeneratingListing] = useState(false);
 
   const apiFetch = useCallback(async (url: string, init?: RequestInit): Promise<Response> => {
     const first = await fetch(url, { cache: "no-store", ...init, credentials: "same-origin" });
@@ -390,6 +407,54 @@ export function PropertiesWorkbench() {
 
   function updateFilter(field: keyof FilterState, value: string) {
     setFilters((current) => ({ ...current, [field]: value }));
+  }
+
+  function toggleListItem(field: "amenities" | "rentalRequirements", value: string) {
+    setForm((current) => {
+      const list = current[field];
+      return { ...current, [field]: list.includes(value) ? list.filter((item) => item !== value) : [...list, value] };
+    });
+  }
+
+  async function generateListingDraft() {
+    setError("");
+    setNotice("");
+
+    if (!form.propertyType || !form.operationType) {
+      setError("Selecciona tipo de propiedad y operación antes de generar con IA");
+      return;
+    }
+
+    setGeneratingListing(true);
+    try {
+      const response = await apiFetch("/api/properties/ai-listing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyType: form.propertyType,
+          operationType: form.operationType,
+          city: form.city.trim() || undefined,
+          bedrooms: form.bedrooms.trim() ? Number(form.bedrooms) : undefined,
+          bathrooms: form.bathrooms.trim() ? Number(form.bathrooms) : undefined,
+          parkingSpots: form.parkingSpots.trim() ? Number(form.parkingSpots) : undefined,
+          priceAmount: form.priceAmount.trim() ? Number(form.priceAmount) : undefined,
+          priceCurrency: form.priceCurrency,
+          amenities: form.amenities,
+          rentalRequirements: form.rentalRequirements
+        })
+      });
+
+      const payload = (await response.json()) as ApiResponse<{ title: string; description: string }>;
+      if (!payload.ok || !payload.data) {
+        setError(payload.reason ?? "No se pudo generar el anuncio con IA");
+        return;
+      }
+
+      setForm((current) => ({ ...current, title: payload.data!.title, description: payload.data!.description }));
+      setNotice("Título y descripción generados con IA. Revisa y ajusta lo que necesites.");
+    } finally {
+      setGeneratingListing(false);
+    }
   }
 
   async function applyFilters(event: FormEvent) {
@@ -664,24 +729,26 @@ export function PropertiesWorkbench() {
       {notice && <div className="notice">{notice}</div>}
 
       <form className="card card-pad" onSubmit={submitProperty} data-testid="property-form">
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="panel-title">{editingId ? "Editar propiedad" : "Nueva propiedad"}</h2>
-          <span className="badge badge-draft">Inventario</span>
+          <button type="button" onClick={() => void generateListingDraft()} disabled={generatingListing} className="btn bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md hover:opacity-90">
+            {generatingListing ? "Generando..." : "Generar con IA"}
+          </button>
         </div>
         <div className="form-grid">
           <label className="field form-span">
             Título
-            <input className="input" value={form.title} onChange={(e) => updateField("title", e.target.value)} />
+            <input className="input" value={form.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Lo genera la IA o escríbelo tú" />
           </label>
           <label className="field form-span">
             Descripción
-            <textarea className="input" rows={3} value={form.description} onChange={(e) => updateField("description", e.target.value)} />
+            <textarea className="input" rows={3} value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="Lo genera la IA con las amenidades y requisitos de abajo" />
           </label>
           <label className="field">
             Tipo de propiedad
             <select className="input" value={form.propertyType} onChange={(e) => updateField("propertyType", e.target.value)}>
               {PROPERTY_TYPES.map((item) => (
-                <option key={item} value={item}>{item}</option>
+                <option key={item} value={item}>{PROPERTY_TYPE_LABELS[item]}</option>
               ))}
             </select>
           </label>
@@ -689,7 +756,7 @@ export function PropertiesWorkbench() {
             Operación
             <select className="input" value={form.operationType} onChange={(e) => updateField("operationType", e.target.value)}>
               {OPERATION_TYPES.map((item) => (
-                <option key={item} value={item}>{item}</option>
+                <option key={item} value={item}>{OPERATION_TYPE_LABELS[item]}</option>
               ))}
             </select>
           </label>
@@ -697,7 +764,7 @@ export function PropertiesWorkbench() {
             Estado de publicación
             <select className="input" value={form.status} onChange={(e) => updateField("status", e.target.value)}>
               {PROPERTY_STATUSES.map((item) => (
-                <option key={item} value={item}>{item}</option>
+                <option key={item} value={item}>{PROPERTY_STATUS_LABELS[item]}</option>
               ))}
             </select>
           </label>
@@ -730,10 +797,6 @@ export function PropertiesWorkbench() {
             <input className="input" type="number" min={0} value={form.parkingSpots} onChange={(e) => updateField("parkingSpots", e.target.value)} />
           </label>
           <label className="field">
-            Área (m²)
-            <input className="input" type="number" min={0} step="0.01" value={form.areaM2} onChange={(e) => updateField("areaM2", e.target.value)} />
-          </label>
-          <label className="field">
             Precio
             <input className="input" type="number" min={0} step="0.01" value={form.priceAmount} onChange={(e) => updateField("priceAmount", e.target.value)} />
           </label>
@@ -746,6 +809,46 @@ export function PropertiesWorkbench() {
             </select>
           </label>
         </div>
+
+        <fieldset className="mt-5 rounded-xl border border-slate-200 p-4">
+          <legend className="px-1 text-sm font-semibold text-slate-700">Amenidades</legend>
+          <div className="flex flex-wrap gap-2">
+            {AMENITY_OPTIONS.map((amenity) => {
+              const checked = form.amenities.includes(amenity);
+              return (
+                <label
+                  key={amenity}
+                  className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                    checked ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <input type="checkbox" className="h-3.5 w-3.5 accent-emerald-600" checked={checked} onChange={() => toggleListItem("amenities", amenity)} />
+                  {checked ? "✓ " : ""}{AMENITY_LABELS[amenity]}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-4 rounded-xl border border-slate-200 p-4">
+          <legend className="px-1 text-sm font-semibold text-slate-700">Requisitos de contratación (renta)</legend>
+          <div className="flex flex-wrap gap-2">
+            {RENTAL_REQUIREMENT_OPTIONS.map((requirement) => {
+              const checked = form.rentalRequirements.includes(requirement);
+              return (
+                <label
+                  key={requirement}
+                  className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                    checked ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <input type="checkbox" className="h-3.5 w-3.5 accent-indigo-600" checked={checked} onChange={() => toggleListItem("rentalRequirements", requirement)} />
+                  {checked ? "✓ " : ""}{RENTAL_REQUIREMENT_LABELS[requirement]}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         {formErrors.length > 0 && (
           <ul className="error-list mt-4">
@@ -820,10 +923,10 @@ export function PropertiesWorkbench() {
                 <div className="min-w-40">
                   <strong className="text-sm text-slate-900">{property.title}</strong>
                   <div className="muted">
-                    {property.property_type} · {property.operation_type}
+                    {PROPERTY_TYPE_LABELS[property.property_type] ?? property.property_type} · {OPERATION_TYPE_LABELS[property.operation_type] ?? property.operation_type}
                   </div>
                 </div>
-                <span className={`badge badge-${property.status}`}>{property.status}</span>
+                <span className={`badge badge-${property.status}`}>{PROPERTY_STATUS_LABELS[property.status] ?? property.status}</span>
                 <span className="muted">
                   {property.city ?? "—"} · {property.price_amount ?? "—"} {property.price_currency ?? ""}
                 </span>
@@ -834,6 +937,7 @@ export function PropertiesWorkbench() {
                   )}
                   <button type="button" onClick={() => selectPropertyForMedia(property)} className="btn-secondary">Media</button>
                   <button type="button" onClick={() => selectPropertyForContent(property)} className="btn-secondary">Contenido</button>
+                  <button type="button" onClick={() => window.open(`/properties/${property.id}/ficha`, "_blank")} className="btn-secondary">Generar PDF</button>
                   <button type="button" onClick={() => deleteProperty(property)} className="btn-danger">Eliminar propiedad</button>
                 </div>
               </div>

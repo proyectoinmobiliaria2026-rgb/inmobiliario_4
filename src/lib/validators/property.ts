@@ -1,8 +1,5 @@
 import type { CreatePropertyInput, PropertyStatus, UpdatePropertyInput } from "@/lib/types/property";
-
-const PROPERTY_STATUSES: PropertyStatus[] = ["draft", "published", "archived"];
-const PROPERTY_TYPES = ["apartment", "house", "land", "office", "commercial"] as const;
-const OPERATION_TYPES = ["sale", "rent", "temporary_rent"] as const;
+import { AMENITY_OPTIONS, OPERATION_TYPES, PROPERTY_STATUSES, PROPERTY_TYPES, RENTAL_REQUIREMENT_OPTIONS } from "@/lib/types/property";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -53,6 +50,26 @@ function validateOperationType(value: string) {
   if (!OPERATION_TYPES.includes(value as (typeof OPERATION_TYPES)[number])) {
     throw new Error(`operationType must be one of: ${OPERATION_TYPES.join(", ")}`);
   }
+}
+
+function readStringArray(value: unknown, field: string, allowed: readonly string[]): string[] | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    throw new Error(`${field} must be an array of strings`);
+  }
+  const items = value.map((item) => {
+    if (typeof item !== "string") {
+      throw new Error(`${field} must be an array of strings`);
+    }
+    return item.trim();
+  });
+  const unknown = items.filter((item) => !allowed.includes(item));
+  if (unknown.length > 0) {
+    throw new Error(`${field} contains invalid values: ${unknown.join(", ")}`);
+  }
+  return Array.from(new Set(items));
 }
 
 function validateBusinessFieldRanges(input: {
@@ -119,11 +136,59 @@ export function parseCreatePropertyInput(payload: unknown): CreatePropertyInput 
     parkingSpots: readOptionalNumber(payload.parkingSpots),
     areaM2: readOptionalNumber(payload.areaM2),
     priceAmount: readOptionalNumber(payload.priceAmount),
-    priceCurrency: readOptionalString(payload.priceCurrency)
+    priceCurrency: readOptionalString(payload.priceCurrency),
+    amenities: readStringArray(payload.amenities, "amenities", AMENITY_OPTIONS),
+    rentalRequirements: readStringArray(payload.rentalRequirements, "rentalRequirements", RENTAL_REQUIREMENT_OPTIONS)
   };
 
   validateBusinessFieldRanges(result);
   return result;
+}
+
+export type ListingDraftInput = {
+  propertyType: string;
+  operationType: string;
+  city?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  parkingSpots?: number;
+  priceAmount?: number;
+  priceCurrency?: string;
+  amenities: string[];
+  rentalRequirements: string[];
+};
+
+export function parseListingDraftInput(payload: unknown): ListingDraftInput {
+  if (!isRecord(payload)) {
+    throw new Error("Invalid payload");
+  }
+
+  const propertyType = readOptionalString(payload.propertyType);
+  const operationType = readOptionalString(payload.operationType);
+  if (!propertyType) {
+    throw new Error("propertyType is required");
+  }
+  if (!operationType) {
+    throw new Error("operationType is required");
+  }
+  validatePropertyType(propertyType);
+  validateOperationType(operationType);
+
+  const priceAmount = readOptionalNumber(payload.priceAmount);
+  assertNonNegativeNumber(priceAmount, "priceAmount");
+
+  return {
+    propertyType,
+    operationType,
+    city: readOptionalString(payload.city),
+    bedrooms: readOptionalNumber(payload.bedrooms),
+    bathrooms: readOptionalNumber(payload.bathrooms),
+    parkingSpots: readOptionalNumber(payload.parkingSpots),
+    priceAmount,
+    priceCurrency: readOptionalString(payload.priceCurrency),
+    amenities: readStringArray(payload.amenities, "amenities", AMENITY_OPTIONS) ?? [],
+    rentalRequirements: readStringArray(payload.rentalRequirements, "rentalRequirements", RENTAL_REQUIREMENT_OPTIONS) ?? []
+  };
 }
 
 export function parseUpdatePropertyInput(payload: unknown): UpdatePropertyInput {
@@ -160,7 +225,9 @@ export function parseUpdatePropertyInput(payload: unknown): UpdatePropertyInput 
     parkingSpots: readOptionalNumber(payload.parkingSpots),
     areaM2: readOptionalNumber(payload.areaM2),
     priceAmount: readOptionalNumber(payload.priceAmount),
-    priceCurrency: readOptionalString(payload.priceCurrency)
+    priceCurrency: readOptionalString(payload.priceCurrency),
+    amenities: readStringArray(payload.amenities, "amenities", AMENITY_OPTIONS),
+    rentalRequirements: readStringArray(payload.rentalRequirements, "rentalRequirements", RENTAL_REQUIREMENT_OPTIONS)
   };
 
   validateBusinessFieldRanges(result);

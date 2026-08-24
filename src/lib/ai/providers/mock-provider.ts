@@ -1,7 +1,9 @@
 // TEMPORAL: provider mock deterministico para desarrollo y pruebas.
 // Debe reemplazarse por un proveedor real (AI_PROVIDER=openai) en produccion.
-import type { AIService } from "@/lib/ai/ai-service";
+import type { AIService, ListingDraft } from "@/lib/ai/ai-service";
 import type { ContentGenerationInput, GeneratedContent } from "@/lib/types/content";
+import type { ListingDraftInput } from "@/lib/validators/property";
+import { AMENITY_LABELS, OPERATION_TYPE_LABELS, PROPERTY_TYPE_LABELS, RENTAL_REQUIREMENT_LABELS } from "@/lib/types/property";
 
 const HASHTAG_POOL = [
   "#bienesraices",
@@ -103,5 +105,36 @@ export class MockAIService implements AIService {
       hashtags: buildHashtags(input, config.hashtagCount),
       cta: config.cta
     };
+  }
+
+  async generateListing(input: ListingDraftInput): Promise<ListingDraft> {
+    const typeLabel = PROPERTY_TYPE_LABELS[input.propertyType] ?? input.propertyType;
+    const operationLabel = OPERATION_TYPE_LABELS[input.operationType] ?? input.operationType;
+    const amenities = input.amenities.map((item) => AMENITY_LABELS[item] ?? item);
+    const requirements = input.rentalRequirements.map((item) => RENTAL_REQUIREMENT_LABELS[item] ?? item);
+    const place = input.city ? ` en ${input.city}` : "";
+
+    const highlight = amenities[0] ? ` con ${amenities[0].toLowerCase()}` : "";
+    const title = `${typeLabel} en ${operationLabel}${place}${highlight}`.slice(0, 120);
+
+    const features = [
+      input.bedrooms ? `${input.bedrooms} recámaras` : null,
+      input.bathrooms ? `${input.bathrooms} baños` : null,
+      input.parkingSpots ? `${input.parkingSpots} estacionamiento(s)` : null,
+      input.city ? `ubicado en ${input.city}` : null
+    ].filter((item): item is string => item !== null);
+
+    const descriptionParts = [
+      `${typeLabel} ideal para ${input.operationType === "sale" ? "quienes buscan invertir o estrenar hogar" : "quienes buscan un hogar cómodo y seguro"}.`,
+      features.length > 0 ? `Cuenta con ${features.join(", ")}.` : null,
+      amenities.length > 0 ? `El edificio ofrece ${amenities.join(", ").toLowerCase()}.` : null,
+      `Precio: ${input.priceAmount ? `${input.priceAmount} ${input.priceCurrency ?? "MXN"}` : "a consultar"}.`,
+      requirements.length > 0 ? `Requisitos de contratación: ${requirements.join(", ")}.` : null,
+      "Agenda tu visita y conoce todo lo que este espacio tiene para ti."
+    ];
+
+    const description = descriptionParts.filter((part): part is string => part !== null).join(" ");
+
+    return { title, description };
   }
 }

@@ -12,6 +12,23 @@
   body {
     @apply bg-slate-100 text-slate-900 antialiased;
   }
+
+  @media print {
+    header,
+    footer,
+    .print\:hidden {
+      display: none !important;
+    }
+
+    body {
+      background: #ffffff;
+    }
+
+    .card {
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
 }
 
 @layer components {

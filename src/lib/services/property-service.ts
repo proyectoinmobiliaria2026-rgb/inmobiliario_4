@@ -38,6 +38,8 @@ function toInsertPayload(input: CreatePropertyInput, userId: string) {
     area_m2: input.areaM2 ?? null,
     price_amount: input.priceAmount ?? null,
     price_currency: input.priceCurrency ?? "USD",
+    amenities: input.amenities ?? [],
+    rental_requirements: input.rentalRequirements ?? [],
     published_at: input.status === "published" ? new Date().toISOString() : null
   };
 }
@@ -60,6 +62,8 @@ function toUpdatePayload(input: UpdatePropertyInput) {
   if (input.areaM2 !== undefined) payload.area_m2 = input.areaM2;
   if (input.priceAmount !== undefined) payload.price_amount = input.priceAmount;
   if (input.priceCurrency !== undefined) payload.price_currency = input.priceCurrency;
+  if (input.amenities !== undefined) payload.amenities = input.amenities;
+  if (input.rentalRequirements !== undefined) payload.rental_requirements = input.rentalRequirements;
 
   return payload;
 }

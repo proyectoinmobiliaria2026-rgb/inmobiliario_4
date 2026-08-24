@@ -69,7 +69,7 @@ test("properties workbench UI flow with media", async ({ page }) => {
   await row.getByRole("button", { name: "Editar" }).click();
   await form.getByLabel("Estado de publicación").selectOption("published");
   await page.getByRole("button", { name: "Guardar cambios" }).click();
-  await expect(row).toContainText("published");
+  await expect(row).toContainText("Publicada");
 
   await row.getByRole("button", { name: "Eliminar propiedad" }).click();
   await expect(page.locator(".property-row", { hasText: title })).toHaveCount(0);
