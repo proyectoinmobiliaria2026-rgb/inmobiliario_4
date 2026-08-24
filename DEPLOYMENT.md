@@ -19,6 +19,8 @@ Estado: listo para conectar GitHub + Vercel (Fase 3).
 - Endpoint de verificacion Supabase disponible en `/api/health/supabase`.
 - Proyecto local enlazado a Supabase remoto y migraciones aplicadas.
 - Supabase project ref: `zkcspkxhhmpwbtxauldw`.
+- Cuenta Vercel: `proyectoinmobiliaria2026@gmail.com` (username CLI: `inmobiliariaapp026-5947`, scope/team: `cfdigital`).
+- Integracion GitHub -> Vercel conectada: cada push a `main` despliega a produccion automaticamente.
 
 ## Variables de entorno requeridas en Vercel
 
