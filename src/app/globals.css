@@ -2,6 +2,31 @@
 
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Marca institucional: azul marino / rojo / blanco */
+  --color-indigo-50: #eef2fb;
+  --color-indigo-100: #d6def2;
+  --color-indigo-200: #a7b4e0;
+  --color-indigo-300: #6b81c4;
+  --color-indigo-400: #3457a8;
+  --color-indigo-500: #1e3a8a;
+  --color-indigo-600: #18306f;
+  --color-indigo-700: #142657;
+  --color-indigo-800: #0f1d42;
+  --color-indigo-900: #0a1530;
+  --color-indigo-950: #060d1f;
+
+  --color-violet-50: #fdeced;
+  --color-violet-100: #fbdadb;
+  --color-violet-200: #f5b4b6;
+  --color-violet-300: #ec8083;
+  --color-violet-400: #df5155;
+  --color-violet-500: #cf2a2f;
+  --color-violet-600: #b21f24;
+  --color-violet-700: #8f181c;
+  --color-violet-800: #701417;
+  --color-violet-900: #560f12;
+  --color-violet-950: #3a080a;
 }
 
 @layer base {
@@ -80,7 +105,7 @@
   }
 
   .btn-primary {
-    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 disabled:cursor-not-allowed disabled:opacity-50 bg-slate-900 text-white shadow-sm hover:bg-slate-700;
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 disabled:cursor-not-allowed disabled:opacity-50 bg-indigo-700 text-white shadow-sm hover:bg-indigo-800;
   }
 
   .btn-secondary {

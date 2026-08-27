@@ -239,13 +239,13 @@ export function PublicationsWorkbench() {
         </div>
         <div className="actions"><button type="button" className="btn-secondary" onClick={() => void fetchAiCopy()}>Traer copia IA</button><button type="submit" className="btn-primary">{form.scheduledFor ? "Crear y programar" : "Crear borrador"}</button></div>
       </form>
-      <div className="card card-pad overflow-hidden bg-slate-900 text-white xl:col-span-2" data-testid="scheduler-panel">
+      <div className="card card-pad overflow-hidden bg-indigo-950 text-white xl:col-span-2" data-testid="scheduler-panel">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-base font-semibold tracking-tight">Scheduler</h2>
-          <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">{jobs.length} pendientes</span>
+          <span className="rounded-full bg-indigo-900 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">{jobs.length} pendientes</span>
         </div>
         <div className="mt-4 grid gap-2.5">
-          {jobs.map((job) => <div className="rounded-xl border border-slate-700/70 bg-slate-800/60 px-4 py-3" key={job.id}>
+          {jobs.map((job) => <div className="rounded-xl border border-indigo-800/70 bg-indigo-900/60 px-4 py-3" key={job.id}>
             <strong className="text-sm">{job.job_type}</strong>
             <div className="text-xs text-slate-400">Intentos: {job.attempts}/{job.max_attempts} · Próximo: {job.next_retry_at ? new Date(job.next_retry_at).toLocaleString() : "-"}</div>
           </div>)}

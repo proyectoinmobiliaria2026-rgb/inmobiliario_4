@@ -18,7 +18,7 @@ export default function RootLayout({
       <body className="min-h-screen">
         <Navbar />
         <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">{children}</main>
-        <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+        <footer className="border-t border-indigo-100 py-6 text-center text-xs text-indigo-300">
           CFDIGITAL · Plataforma de marketing inmobiliario
         </footer>
       </body>

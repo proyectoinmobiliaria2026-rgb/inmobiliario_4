@@ -54,15 +54,15 @@ export function Navbar() {
   const initial = (user?.email ?? "?").charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-900/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-indigo-800 bg-indigo-950/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-black text-white shadow-lg shadow-indigo-500/30">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-red-600 text-sm font-black text-white shadow-lg shadow-indigo-500/30">
             CF
           </span>
           <span className="text-lg font-bold tracking-tight text-white">
             CFDIGITAL
-            <span className="ml-2 hidden rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300 sm:inline">
+              <span className="ml-2 hidden rounded-full bg-indigo-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-200 sm:inline">
               Inmobiliaria SaaS
             </span>
           </span>
@@ -88,16 +88,16 @@ export function Navbar() {
         <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>
-              <div className="hidden items-center gap-2.5 rounded-full border border-slate-700 bg-slate-800/80 py-1 pl-1 pr-3 sm:flex">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-xs font-bold text-white">
+              <div className="hidden items-center gap-2.5 rounded-full border border-indigo-700 bg-indigo-900/80 py-1 pl-1 pr-3 sm:flex">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-red-500 text-xs font-bold text-white">
                   {initial}
                 </span>
-                <span className="max-w-40 truncate text-xs font-medium text-slate-200">{user.email}</span>
+                <span className="max-w-40 truncate text-xs font-medium text-indigo-100">{user.email}</span>
               </div>
               <button
                 type="button"
                 onClick={() => void logout()}
-                className="cursor-pointer rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                className="cursor-pointer rounded-lg border border-indigo-700 px-3 py-1.5 text-xs font-semibold text-indigo-200 transition hover:bg-indigo-900 hover:text-white"
               >
                 Salir
               </button>
@@ -106,7 +106,7 @@ export function Navbar() {
             <>
               <Link
                 href="/register"
-                className="rounded-lg border border-slate-700 px-3.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                className="rounded-lg border border-indigo-700 px-3.5 py-1.5 text-xs font-semibold text-indigo-100 transition hover:bg-indigo-900 hover:text-white"
               >
                 Crear cuenta
               </Link>
