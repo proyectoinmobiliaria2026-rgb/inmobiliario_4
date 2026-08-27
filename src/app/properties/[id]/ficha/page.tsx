@@ -20,6 +20,7 @@ type FichaProperty = {
   property_type: string;
   operation_type: string;
   status: string;
+  folio: string | null;
   address_line: string | null;
   city: string | null;
   state: string | null;
@@ -78,19 +79,20 @@ export default function PropertyFichaPage() {
     <div className="print-sheet mx-auto max-w-3xl">
       <div className="mb-4 flex justify-end print:hidden">
         <button type="button" className="btn-primary" onClick={() => window.print()}>
-          Imprimir / Guardar PDF
+          Imprimir / Guardar como PDF
         </button>
+        <span className="ml-3 self-center text-xs text-slate-500">Vista imprimible disponible (no es un PDF automático)</span>
       </div>
 
       <article className="card card-pad">
         <header className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-black text-white">CF</span>
-            <span className="text-lg font-bold tracking-tight text-slate-900">CFDIGITAL</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 to-red-700 text-sm font-black text-white">CF</span>
+            <span className="text-lg font-bold tracking-tight text-slate-900">CF Digital</span>
           </div>
           <div className="text-right text-xs text-slate-500">
             <p>Ficha de propiedad</p>
-            <p>{new Date().toLocaleDateString()}</p>
+            <p>{property.folio ? `Folio ${property.folio}` : ""} · {new Date().toLocaleDateString()}</p>
           </div>
         </header>
 

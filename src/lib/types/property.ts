@@ -1,4 +1,4 @@
-export type PropertyStatus = "draft" | "published" | "archived";
+export type PropertyStatus = "draft" | "active" | "paused" | "closed" | "archived";
 
 export type PropertyRecord = {
   id: string;
@@ -8,6 +8,7 @@ export type PropertyRecord = {
   property_type: string;
   operation_type: string;
   status: PropertyStatus;
+  folio: string | null;
   address_line: string | null;
   city: string | null;
   state: string | null;
@@ -26,7 +27,7 @@ export type PropertyRecord = {
 };
 
 export type CreatePropertyInput = {
-  title: string;
+  title?: string;
   description?: string;
   propertyType: string;
   operationType: string;
@@ -49,7 +50,7 @@ export type UpdatePropertyInput = Partial<CreatePropertyInput>;
 
 export const PROPERTY_TYPES = ["apartment", "house", "land", "office", "commercial"] as const;
 export const OPERATION_TYPES = ["sale", "rent", "temporary_rent"] as const;
-export const PROPERTY_STATUSES: PropertyStatus[] = ["draft", "published", "archived"];
+export const PROPERTY_STATUSES: PropertyStatus[] = ["draft", "active", "paused", "closed", "archived"];
 
 export const AMENITY_OPTIONS = [
   "roof_garden",
@@ -84,7 +85,9 @@ export const OPERATION_TYPE_LABELS: Record<string, string> = {
 
 export const PROPERTY_STATUS_LABELS: Record<string, string> = {
   draft: "Borrador",
-  published: "Publicada",
+  active: "En comercialización",
+  paused: "Pausada",
+  closed: "Cerrada",
   archived: "Archivada"
 };
 

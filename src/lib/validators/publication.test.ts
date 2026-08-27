@@ -5,7 +5,7 @@ describe("publication validators", () => {
   it("requires a property and a valid platform", () => {
     expect(() => parseCreatePublicationInput({ platform: "facebook" })).toThrow("propertyId is required");
     expect(() => parseCreatePublicationInput({ propertyId: "p1" })).toThrow("platform is required");
-    expect(() => parseCreatePublicationInput({ propertyId: "p1", platform: "tiktok" })).toThrow("platform must be one of");
+    expect(() => parseCreatePublicationInput({ propertyId: "p1", platform: "unknown" })).toThrow("platform must be one of");
   });
 
   it("normalizes and accepts a valid publication", () => {

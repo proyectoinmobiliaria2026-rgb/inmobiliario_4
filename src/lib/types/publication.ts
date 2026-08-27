@@ -6,7 +6,7 @@ export const PUBLICATION_STATUSES: PublicationStatus[] = ["draft", "scheduled", 
 
 export type PublicationPlatform = ContentChannel;
 
-export const PUBLICATION_PLATFORMS: PublicationPlatform[] = ["facebook", "instagram", "whatsapp"];
+export const PUBLICATION_PLATFORMS: PublicationPlatform[] = ["facebook", "instagram", "whatsapp", "tiktok"];
 
 export type PublicationMode = "assisted" | "automatic";
 

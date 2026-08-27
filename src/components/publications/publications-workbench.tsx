@@ -9,7 +9,7 @@ type ApiResponse<T> = { ok: boolean; data?: T; reason?: string };
 type PropertyOption = { id: string; title: string };
 type PublicationFormState = { propertyId: string; platform: PublicationPlatform; copy: string; hashtags: string; cta: string; scheduledFor: string };
 
-const PLATFORMS: PublicationPlatform[] = ["facebook", "instagram", "whatsapp"];
+const PLATFORMS: PublicationPlatform[] = ["facebook", "instagram", "whatsapp", "tiktok"];
 const STATUSES: PublicationStatus[] = ["draft", "scheduled", "published", "failed", "cancelled"];
 const EMPTY_FORM: PublicationFormState = { propertyId: "", platform: "facebook", copy: "", hashtags: "", cta: "", scheduledFor: "" };
 
@@ -35,7 +35,7 @@ function PublicationRow({ publication, propertyTitle, onSchedule, onPublish, onC
       <div className="muted">{publication.platform} · {truncate(publication.payload?.copy ?? "")}</div>
     </div>
     <span className={`badge badge-${publication.status}`}>{publication.status}</span>
-    <span className="muted">{publication.status === "scheduled" && publication.scheduled_for ? `Programada: ${new Date(publication.scheduled_for).toLocaleString()}` : publication.executed_at ? `Ejecutada: ${new Date(publication.executed_at).toLocaleString()}` : "Sin ejecutar"}</span>
+    <span className="muted">{publication.status === "scheduled" && publication.scheduled_for ? `Programada: ${new Date(publication.scheduled_for).toLocaleString()}` : publication.status === "published" ? "Registro interno (sin confirmación de red social)" : publication.executed_at ? `Ejecutada: ${new Date(publication.executed_at).toLocaleString()}` : "Sin ejecutar"}</span>
     <div className="actions">
       <input className="input w-auto py-1.5 text-xs" aria-label={`Fecha de publicación ${publication.id}`} type="datetime-local" value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
       <button type="button" className="btn-secondary" onClick={() => onSchedule(dateValue)}>Programar</button>

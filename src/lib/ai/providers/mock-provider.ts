@@ -29,6 +29,10 @@ const CHANNEL_CONFIG: Record<
   whatsapp: {
     cta: "Responde este mensaje para agendar tu visita.",
     hashtagCount: 2
+  },
+  tiktok: {
+    cta: "Comenta o envíanos DM para más info.",
+    hashtagCount: 8
   }
 };
 

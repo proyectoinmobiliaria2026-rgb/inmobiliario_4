@@ -30,6 +30,7 @@ type PropertyItem = {
   city: string | null;
   state: string | null;
   country: string | null;
+  folio: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
   parking_spots: number | null;
@@ -83,7 +84,7 @@ type GenerationItem = {
   created_at: string;
 };
 
-const CONTENT_CHANNELS = ["facebook", "instagram", "whatsapp"];
+const CONTENT_CHANNELS = ["facebook", "instagram", "whatsapp", "tiktok"];
 
 const EMPTY_FILTERS: FilterState = {
   status: "",
@@ -187,15 +188,15 @@ function validatePropertyForm(form: PropertyFormState): string[] {
     }
   }
 
-  if (form.status === "published") {
+  if (form.status === "active") {
     if (form.description.trim().length < 20) {
-      errors.push("Para publicar la descripción necesita al menos 20 caracteres");
+      errors.push("Para poner en comercialización la descripción necesita al menos 20 caracteres");
     }
     if (!(Number(form.priceAmount) > 0)) {
-      errors.push("Para publicar el precio debe ser mayor a 0");
+      errors.push("Para poner en comercialización el precio debe ser mayor a 0");
     }
     if (!form.addressLine.trim() || !form.city.trim() || !form.country.trim()) {
-      errors.push("Para publicar se requiere dirección, ciudad y país");
+      errors.push("Para poner en comercialización se requiere dirección, ciudad y país");
     }
   }
 
@@ -524,21 +525,28 @@ export function PropertiesWorkbench() {
     }
   }
 
-  async function publishProperty(property: PropertyItem) {
+  function nextCommercialAction(status: string): { label: string; next: string } | null {
+    if (status === "draft") return { label: "Poner en comercialización", next: "active" };
+    if (status === "active") return { label: "Pausar", next: "paused" };
+    if (status === "paused") return { label: "Reanudar comercialización", next: "active" };
+    return null;
+  }
+
+  async function changeCommercialStatus(property: PropertyItem, next: string) {
     setError("");
     const response = await apiFetch(`/api/properties/${property.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "published" })
+      body: JSON.stringify({ status: next })
     });
 
     const payload = (await response.json()) as ApiResponse<PropertyItem>;
     if (!payload.ok || !payload.data) {
-      setError(payload.reason ?? "No se pudo publicar la propiedad");
+      setError(payload.reason ?? "No se pudo actualizar el estado comercial");
       return;
     }
 
-    setNotice("Propiedad publicada");
+    setNotice(`Estado comercial actualizado a ${PROPERTY_STATUS_LABELS[next] ?? next}`);
     await loadProperties();
   }
 
@@ -731,19 +739,26 @@ export function PropertiesWorkbench() {
       <form className="card card-pad" onSubmit={submitProperty} data-testid="property-form">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="panel-title">{editingId ? "Editar propiedad" : "Nueva propiedad"}</h2>
-          <button type="button" onClick={() => void generateListingDraft()} disabled={generatingListing} className="btn bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md hover:opacity-90">
-            {generatingListing ? "Generando..." : "Generar con IA"}
+          <button type="button" onClick={() => void generateListingDraft()} disabled={generatingListing} className="btn bg-gradient-to-r from-blue-700 to-red-700 text-white shadow-md hover:opacity-90">
+            {generatingListing ? "Generando..." : "Generar título y descripción con IA"}
           </button>
         </div>
         <div className="form-grid">
-          <label className="field form-span">
-            Título
-            <input className="input" value={form.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Lo genera la IA o escríbelo tú" />
-          </label>
-          <label className="field form-span">
-            Descripción
-            <textarea className="input" rows={3} value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="Lo genera la IA con las amenidades y requisitos de abajo" />
-          </label>
+          {(editingId !== null || form.title || form.description) && (
+            <>
+              <label className="field form-span">
+                Título (propuesto por IA, editable)
+                <input className="input" value={form.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Lo genera la IA o escríbelo tú" />
+              </label>
+              <label className="field form-span">
+                Descripción (propuesta por IA, editable)
+                <textarea className="input" rows={3} value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="Lo genera la IA con las amenidades y requisitos de abajo" />
+              </label>
+            </>
+          )}
+          {editingId === null && !form.title && !form.description && (
+            <p className="field form-span muted">El título y la descripción se generan con IA al final (paso 6 del expediente). Puedes crear la propiedad y luego generarlos.</p>
+          )}
           <label className="field">
             Tipo de propiedad
             <select className="input" value={form.propertyType} onChange={(e) => updateField("propertyType", e.target.value)}>
@@ -761,7 +776,7 @@ export function PropertiesWorkbench() {
             </select>
           </label>
           <label className="field">
-            Estado de publicación
+            Estado comercial
             <select className="input" value={form.status} onChange={(e) => updateField("status", e.target.value)}>
               {PROPERTY_STATUSES.map((item) => (
                 <option key={item} value={item}>{PROPERTY_STATUS_LABELS[item]}</option>
@@ -929,7 +944,7 @@ export function PropertiesWorkbench() {
       <div className="card" data-testid="property-list">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <h2 className="panel-title">Inventario</h2>
-          <span className="badge badge-published">{total} registros</span>
+          <span className="badge badge-draft">{total} registros</span>
         </div>
         <div className="p-5">
           <div className="list">
@@ -947,12 +962,9 @@ export function PropertiesWorkbench() {
                 </span>
                 <div className="actions">
                   <button type="button" onClick={() => startEdit(property)} className="btn-secondary">Editar</button>
-                  {property.status !== "published" && (
-                    <button type="button" onClick={() => publishProperty(property)} className="btn-primary">Publicar</button>
-                  )}
                   <button type="button" onClick={() => selectPropertyForMedia(property)} className="btn-secondary">Media</button>
                   <button type="button" onClick={() => selectPropertyForContent(property)} className="btn-secondary">Contenido</button>
-                  <button type="button" onClick={() => window.open(`/properties/${property.id}/ficha`, "_blank")} className="btn-secondary">Generar PDF</button>
+                  <button type="button" onClick={() => window.open(`/properties/${property.id}/ficha`, "_blank")} className="btn-secondary">Ver ficha</button>
                   <button type="button" onClick={() => deleteProperty(property)} className="btn-danger">Eliminar propiedad</button>
                 </div>
               </div>
@@ -969,12 +981,29 @@ export function PropertiesWorkbench() {
         </div>
       </div>
 
-      {selectedPropertyId && (
-        <div className="card" data-testid="media-panel">
+      {selectedPropertyId && selectedProperty && (
+        <div className="card" data-testid="property-expediente">
           <div className="border-b border-slate-100 px-5 py-4">
-            <h3 className="panel-title">Multimedia: {selectedProperty?.title ?? ""}</h3>
+            <h3 className="panel-title">Expediente: {selectedProperty.title}</h3>
+            <p className="panel-subtitle mt-1">
+              Folio {selectedProperty.folio ?? "—"} · Estado comercial: {PROPERTY_STATUS_LABELS[selectedProperty.status] ?? selectedProperty.status}
+            </p>
           </div>
-          <div className="p-5">
+          <div className="p-5 space-y-8">
+            <section data-testid="expediente-datos">
+              <h4 className="exp-step">1. Datos de la propiedad</h4>
+              <div className="mb-3">
+                <button type="button" onClick={() => startEdit(selectedProperty)} className="btn-secondary">Editar datos</button>
+              </div>
+              <p className="muted">
+                {PROPERTY_TYPE_LABELS[selectedProperty.property_type] ?? selectedProperty.property_type} ·{" "}
+                {OPERATION_TYPE_LABELS[selectedProperty.operation_type] ?? selectedProperty.operation_type} ·{" "}
+                {selectedProperty.price_amount ?? "—"} {selectedProperty.price_currency ?? ""}
+              </p>
+            </section>
+
+            <section data-testid="expediente-fotos">
+              <h4 className="exp-step">2. Fotos múltiples</h4>
             <form onSubmit={submitMedia} className="form-grid">
               <label className="field">
                 Tipo de archivo
@@ -1024,6 +1053,23 @@ export function PropertiesWorkbench() {
               ))}
               {media.length === 0 && <p className="muted">Sin archivos para esta propiedad.</p>}
             </div>
+            </section>
+
+            <section data-testid="expediente-staging">
+              <h4 className="exp-step">3. Staging de fotos (amueblado)</h4>
+              <p className="notice">Pendiente de integración de staging. Al conectar STAGING_PROVIDER se generará aquí la versión amueblada derivada de las fotos originales.</p>
+            </section>
+
+            <section data-testid="expediente-reel">
+              <h4 className="exp-step">4. Generación y aprobación de reel</h4>
+              <p className="notice">Generación de reel pendiente de integración (REEL_PROVIDER).</p>
+            </section>
+
+            <section data-testid="expediente-ficha">
+              <h4 className="exp-step">5. Ficha técnica PDF profesional</h4>
+              <p className="notice">Vista imprimible disponible (no es un PDF automático ni descargable todavía).</p>
+              <a className="btn-secondary" href={`/properties/${selectedProperty.id}/ficha`} target="_blank" rel="noreferrer">Ver ficha / vista imprimible</a>
+            </section>
           </div>
         </div>
       )}
@@ -1031,9 +1077,9 @@ export function PropertiesWorkbench() {
       {selectedPropertyId && (
         <div className="card" data-testid="content-panel">
           <div className="border-b border-slate-100 px-5 py-4">
-            <h3 className="panel-title">Contenido IA: {selectedProperty?.title ?? ""}</h3>
+            <h3 className="panel-title">6. Copies con IA (Facebook, Instagram, TikTok): {selectedProperty?.title ?? ""}</h3>
             <p className="panel-subtitle mt-1">
-              Copies adaptados por canal (Facebook, Instagram, WhatsApp) con hashtags y CTA.
+              Copies adaptados por canal con hashtags y CTA. Generados con proveedor simulado hasta conectar un proveedor real.
             </p>
           </div>
           <div className="p-5">
@@ -1057,6 +1103,7 @@ export function PropertiesWorkbench() {
                     <span className="muted">
                       {new Date(gen.created_at).toLocaleString()} · {gen.provider}
                     </span>
+                    {gen.provider === "mock" && <span className="badge badge-simulado">simulado</span>}
                   </div>
                   <pre className="generation-copy">{gen.output?.copy ?? ""}</pre>
                   <div className="hashtag-row">
@@ -1069,6 +1116,29 @@ export function PropertiesWorkbench() {
               ))}
               {generations.length === 0 && <p className="muted">Sin generaciones todavía.</p>}
             </div>
+          </div>
+        </div>
+      )}
+
+      {selectedPropertyId && selectedProperty && (
+        <div className="card" data-testid="expediente-publicacion">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <h3 className="panel-title">7. Revisión, programación o publicación</h3>
+          </div>
+          <div className="p-5 space-y-3">
+            <div className="actions">
+              {nextCommercialAction(selectedProperty.status) && (
+                <button
+                  type="button"
+                  onClick={() => changeCommercialStatus(selectedProperty, nextCommercialAction(selectedProperty.status)!.next)}
+                  className="btn-primary"
+                >
+                  {nextCommercialAction(selectedProperty.status)!.label}
+                </button>
+              )}
+              <a className="btn-secondary" href={`/publications?property=${selectedProperty.id}`}>Programar publicación</a>
+            </div>
+            <p className="notice">Las publicaciones son registros internos; la confirmación en red social (Facebook, Instagram, TikTok) queda pendiente de integración (SOCIAL_INTEGRATION).</p>
           </div>
         </div>
       )}

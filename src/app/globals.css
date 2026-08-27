@@ -78,6 +78,10 @@
     @apply text-sm text-slate-500;
   }
 
+  .exp-step {
+    @apply mb-3 text-sm font-bold uppercase tracking-wide text-slate-700;
+  }
+
   /* Forms */
   .form-grid {
     @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
@@ -189,6 +193,22 @@
 
   .badge-archived {
     @apply bg-slate-200 text-slate-700;
+  }
+
+  .badge-active {
+    @apply bg-blue-900 text-white;
+  }
+
+  .badge-paused {
+    @apply bg-slate-300 text-slate-800;
+  }
+
+  .badge-closed {
+    @apply bg-red-700 text-white;
+  }
+
+  .badge-simulado {
+    @apply bg-amber-100 text-amber-800;
   }
 
   .badge-new {

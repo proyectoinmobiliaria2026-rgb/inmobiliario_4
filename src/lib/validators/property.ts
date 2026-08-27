@@ -98,13 +98,10 @@ export function parseCreatePropertyInput(payload: unknown): CreatePropertyInput 
     throw new Error("Invalid payload");
   }
 
-  const title = readOptionalString(payload.title);
+  const title = readOptionalString(payload.title) || undefined;
   const propertyType = readOptionalString(payload.propertyType);
   const operationType = readOptionalString(payload.operationType);
 
-  if (!title) {
-    throw new Error("title is required");
-  }
   if (!propertyType) {
     throw new Error("propertyType is required");
   }
@@ -118,11 +115,11 @@ export function parseCreatePropertyInput(payload: unknown): CreatePropertyInput 
   const statusText = readOptionalString(payload.status);
   const status = statusText ? (statusText as PropertyStatus) : "draft";
   if (!PROPERTY_STATUSES.includes(status)) {
-    throw new Error("status must be one of: draft, published, archived");
+    throw new Error("status must be one of: draft, active, paused, closed, archived");
   }
 
   const result = {
-    title,
+    title: title ?? undefined,
     description: readOptionalString(payload.description),
     propertyType,
     operationType,
@@ -198,7 +195,7 @@ export function parseUpdatePropertyInput(payload: unknown): UpdatePropertyInput 
 
   const statusText = readOptionalString(payload.status);
   if (statusText && !PROPERTY_STATUSES.includes(statusText as PropertyStatus)) {
-    throw new Error("status must be one of: draft, published, archived");
+    throw new Error("status must be one of: draft, active, paused, closed, archived");
   }
 
   const propertyType = readOptionalString(payload.propertyType);

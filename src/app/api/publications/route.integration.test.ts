@@ -108,7 +108,7 @@ describe("/api/publications integration", () => {
 
     const request = new NextRequest("http://localhost:3000/api/publications", {
       method: "POST",
-      body: JSON.stringify({ propertyId: "property-1", platform: "tiktok" }),
+      body: JSON.stringify({ propertyId: "property-1", platform: "unknown" }),
       headers: {
         "content-type": "application/json"
       }

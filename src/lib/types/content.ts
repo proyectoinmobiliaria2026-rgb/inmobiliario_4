@@ -1,6 +1,6 @@
-export type ContentChannel = "facebook" | "instagram" | "whatsapp";
+export type ContentChannel = "facebook" | "instagram" | "whatsapp" | "tiktok";
 
-export const CONTENT_CHANNELS: ContentChannel[] = ["facebook", "instagram", "whatsapp"];
+export const CONTENT_CHANNELS: ContentChannel[] = ["facebook", "instagram", "whatsapp", "tiktok"];
 
 export type PropertyContentSource = {
   title: string;

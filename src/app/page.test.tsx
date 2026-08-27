@@ -6,6 +6,6 @@ import HomePage from "./page";
 describe("HomePage", () => {
   it("shows project title", () => {
     render(<HomePage />);
-    expect(screen.getByRole("heading", { name: "CFDIGITAL" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "CF Digital" })).toBeInTheDocument();
   });
 });

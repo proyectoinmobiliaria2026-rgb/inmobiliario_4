@@ -53,7 +53,7 @@ describe("/api/properties/:id/generate-content integration", () => {
 
     const request = new NextRequest("http://localhost:3000/api/properties/p1/generate-content", {
       method: "POST",
-      body: JSON.stringify({ channel: "tiktok" }),
+      body: JSON.stringify({ channel: "unknown" }),
       headers: { "content-type": "application/json" }
     });
     const response = await POST(request, { params: Promise.resolve({ id: "p1" }) });

@@ -23,7 +23,7 @@ export type PropertyListResult = {
 function toInsertPayload(input: CreatePropertyInput, userId: string) {
   return {
     created_by: userId,
-    title: input.title,
+    title: input.title ?? null,
     description: input.description ?? null,
     property_type: input.propertyType,
     operation_type: input.operationType,
@@ -40,7 +40,7 @@ function toInsertPayload(input: CreatePropertyInput, userId: string) {
     price_currency: input.priceCurrency ?? "USD",
     amenities: input.amenities ?? [],
     rental_requirements: input.rentalRequirements ?? [],
-    published_at: input.status === "published" ? new Date().toISOString() : null
+    published_at: input.status === "active" ? new Date().toISOString() : null
   };
 }
 
@@ -66,28 +66,6 @@ function toUpdatePayload(input: UpdatePropertyInput) {
   if (input.rentalRequirements !== undefined) payload.rental_requirements = input.rentalRequirements;
 
   return payload;
-}
-
-function assertPublishedRequirements(candidate: {
-  title?: string | null;
-  description?: string | null;
-  price_amount?: number | null;
-  city?: string | null;
-  country?: string | null;
-  address_line?: string | null;
-}) {
-  if (!candidate.title) {
-    throw new Error("Cannot publish without title");
-  }
-  if (!candidate.description || candidate.description.trim().length < 20) {
-    throw new Error("Cannot publish without description (min 20 chars)");
-  }
-  if (!candidate.price_amount || candidate.price_amount <= 0) {
-    throw new Error("Cannot publish without a positive priceAmount");
-  }
-  if (!candidate.city || !candidate.country || !candidate.address_line) {
-    throw new Error("Cannot publish without addressLine, city and country");
-  }
 }
 
 export async function listProperties(
@@ -147,17 +125,6 @@ export async function createProperty(
   userId: string,
   input: CreatePropertyInput
 ): Promise<PropertyRecord> {
-  if (input.status === "published") {
-    assertPublishedRequirements({
-      title: input.title,
-      description: input.description ?? null,
-      price_amount: input.priceAmount ?? null,
-      city: input.city ?? null,
-      country: input.country ?? null,
-      address_line: input.addressLine ?? null
-    });
-  }
-
   const { data, error } = await supabase
     .from("properties")
     .insert(toInsertPayload(input, userId))
@@ -179,26 +146,6 @@ export async function updateProperty(
   const payload = toUpdatePayload(input);
   if (Object.keys(payload).length === 0) {
     throw new Error("No fields provided for update");
-  }
-
-  if (input.status === "published") {
-    const current = await getPropertyById(supabase, id);
-    if (!current) {
-      throw new Error("Property not found");
-    }
-
-    assertPublishedRequirements({
-      title: input.title ?? current.title,
-      description: input.description ?? current.description,
-      price_amount: input.priceAmount ?? current.price_amount,
-      city: input.city ?? current.city,
-      country: input.country ?? current.country,
-      address_line: input.addressLine ?? current.address_line
-    });
-
-    if (current.status !== "published") {
-      payload.published_at = new Date().toISOString();
-    }
   }
 
   const { data, error } = await supabase.from("properties").update(payload).eq("id", id).select("*").single();
