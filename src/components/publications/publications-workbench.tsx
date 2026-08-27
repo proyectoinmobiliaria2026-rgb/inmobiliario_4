@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { fetchProfile } from "@/lib/auth/profile-client";
 import type { PublicationPlatform, PublicationRecord, PublicationStatus, SchedulerJobRecord } from "@/lib/types/publication";
 
 type SessionUser = { id: string; email: string | null };
@@ -57,6 +58,7 @@ export function PublicationsWorkbench() {
   const [platformFilter, setPlatformFilter] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [defaultCta, setDefaultCta] = useState("");
 
   const apiFetch = useCallback(async (url: string, init?: RequestInit) => fetch(url, { cache: "no-store", credentials: "same-origin", ...init }), []);
 
@@ -83,6 +85,18 @@ export function PublicationsWorkbench() {
       if (payload.ok && payload.data) setSession(payload.data);
     });
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    void fetchProfile().then((profile) => {
+      if (!profile) return;
+      const contact = [profile.full_name, profile.phone, profile.email].filter(Boolean).join(" · ");
+      if (contact) {
+        setDefaultCta(contact);
+        setForm((current) => (current.cta ? current : { ...current, cta: contact }));
+      }
+    });
+  }, [session]);
 
   useEffect(() => {
     if (!session) return;
@@ -115,7 +129,7 @@ export function PublicationsWorkbench() {
     if (!payload.ok || !payload.data) { setError(payload.reason ?? "No se pudo obtener contenido IA"); return; }
     const generation = payload.data.items.find((item) => item.channel === form.platform);
     if (!generation) { setError(`No hay contenido IA para ${form.platform}. Genéralo desde propiedades.`); return; }
-    setForm((current) => ({ ...current, copy: generation.output.copy, hashtags: generation.output.hashtags.join(", "), cta: generation.output.cta }));
+    setForm((current) => ({ ...current, copy: generation.output.copy, hashtags: generation.output.hashtags.join(", "), cta: current.cta || generation.output.cta }));
     setNotice("Copia IA cargada");
   }
 
@@ -148,7 +162,7 @@ export function PublicationsWorkbench() {
     } else {
       setNotice("Borrador creado");
     }
-    setForm({ ...EMPTY_FORM, platform: form.platform });
+    setForm({ ...EMPTY_FORM, platform: form.platform, cta: defaultCta });
     await loadPublications(); await loadJobs();
   }
 

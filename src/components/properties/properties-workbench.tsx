@@ -832,7 +832,7 @@ export function PropertiesWorkbench() {
 
         <fieldset className="mt-4 rounded-xl border border-slate-200 p-4">
           <legend className="px-1 text-sm font-semibold text-slate-700">Requisitos de contratación (renta)</legend>
-          <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
             {RENTAL_REQUIREMENT_OPTIONS.map((requirement) => {
               const checked = form.rentalRequirements.includes(requirement);
               return (
@@ -842,11 +842,26 @@ export function PropertiesWorkbench() {
                     checked ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                   }`}
                 >
-                  <input type="checkbox" className="h-3.5 w-3.5 accent-indigo-600" checked={checked} onChange={() => toggleListItem("rentalRequirements", requirement)} />
+                  <input
+                    type="radio"
+                    name="rentalRequirements"
+                    className="h-3.5 w-3.5 accent-indigo-600"
+                    checked={checked}
+                    onChange={() => setForm((current) => ({ ...current, rentalRequirements: [requirement] }))}
+                  />
                   {checked ? "✓ " : ""}{RENTAL_REQUIREMENT_LABELS[requirement]}
                 </label>
               );
             })}
+            {form.rentalRequirements.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setForm((current) => ({ ...current, rentalRequirements: [] }))}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Limpiar
+              </button>
+            )}
           </div>
         </fieldset>
 

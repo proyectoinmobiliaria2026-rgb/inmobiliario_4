@@ -3,15 +3,23 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { isProfileIncomplete } from "@/lib/auth/profile-client";
 
-type SessionUser = { id: string; email: string | null };
+type SessionUser = {
+  id: string;
+  email: string | null;
+  full_name?: string;
+  phone?: string;
+  company?: string;
+};
 
 const NAV_LINKS = [
   { href: "/", label: "Inicio" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/properties", label: "Propiedades" },
   { href: "/leads", label: "Leads" },
-  { href: "/publications", label: "Publicaciones" }
+  { href: "/publications", label: "Publicaciones" },
+  { href: "/account", label: "Mi cuenta" }
 ];
 
 export function Navbar() {
@@ -23,9 +31,14 @@ export function Navbar() {
     void fetch("/api/auth/session", { credentials: "same-origin" }).then(async (response) => {
       if (!response.ok) return;
       const payload = (await response.json()) as { ok: boolean; data?: SessionUser };
-      if (payload.ok && payload.data) setUser(payload.data);
+      if (payload.ok && payload.data) {
+        setUser(payload.data);
+        if (isProfileIncomplete(payload.data) && pathname !== "/account") {
+          router.replace("/account?first=1");
+        }
+      }
     });
-  }, [pathname]);
+  }, [pathname, router]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });

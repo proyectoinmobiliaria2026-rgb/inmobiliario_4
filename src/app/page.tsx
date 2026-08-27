@@ -52,10 +52,19 @@ export default function HomePage() {
       </div>
 
       <div className="grid gap-8">
-        <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 px-6 py-10 shadow-xl sm:px-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-400">Plataforma inmobiliaria</p>
+        <section className="relative overflow-hidden rounded-3xl border border-white/20 px-6 py-10 shadow-xl sm:px-10">
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 bg-cover bg-center"
+            style={{ backgroundImage: "url('/images/hero-apartment.jpg')" }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-900/70 via-slate-900/45 to-slate-900/20"
+          />
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">Plataforma inmobiliaria</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-white sm:text-5xl">CFDIGITAL</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-100 sm:text-base">
             Gestiona propiedades, nutre tus leads y programa publicaciones en redes sociales desde un solo panel
             profesional.
           </p>
