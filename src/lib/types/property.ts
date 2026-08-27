@@ -106,5 +106,5 @@ export const AMENITY_LABELS: Record<string, string> = {
 export const RENTAL_REQUIREMENT_LABELS: Record<string, string> = {
   sin_aval: "Sin aval",
   aval_con_inmueble: "Aval con inmueble",
-  dos_depositos: "2 depósitos"
+  dos_depositos: "2 depósitos + aval con inmueble"
 };
