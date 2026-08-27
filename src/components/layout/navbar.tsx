@@ -33,7 +33,12 @@ export function Navbar() {
       const payload = (await response.json()) as { ok: boolean; data?: SessionUser };
       if (payload.ok && payload.data) {
         setUser(payload.data);
-        if (isProfileIncomplete(payload.data) && pathname !== "/account") {
+        if (
+          isProfileIncomplete(payload.data) &&
+          pathname !== "/account" &&
+          pathname !== "/register" &&
+          pathname !== "/properties"
+        ) {
           router.replace("/account?first=1");
         }
       }
@@ -98,12 +103,20 @@ export function Navbar() {
               </button>
             </>
           ) : (
-            <Link
-              href="/properties"
-              className="rounded-lg bg-indigo-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-400"
-            >
-              Acceder
-            </Link>
+            <>
+              <Link
+                href="/register"
+                className="rounded-lg border border-slate-700 px-3.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
+              >
+                Crear cuenta
+              </Link>
+              <Link
+                href="/properties"
+                className="rounded-lg bg-indigo-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-400"
+              >
+                Acceder
+              </Link>
+            </>
           )}
         </div>
       </div>
