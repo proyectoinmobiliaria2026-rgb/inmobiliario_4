@@ -20,6 +20,9 @@ function AccountContent() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
+
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,6 +37,7 @@ function AccountContent() {
       setFullName(data.full_name);
       setPhone(data.phone);
       setCompany(data.company);
+      setNewEmail(data.email ?? "");
     });
   }, []);
 
@@ -58,6 +62,30 @@ function AccountContent() {
       if (isFirst) {
         setTimeout(() => router.push("/"), 900);
       }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function changeEmail(event: React.FormEvent) {
+    event.preventDefault();
+    setError("");
+    setNotice("");
+    setBusy(true);
+    try {
+      const response = await fetch("/api/auth/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: newEmail, password: emailPassword })
+      });
+      const payload = (await response.json()) as { ok: boolean; reason?: string };
+      if (!payload.ok) {
+        setError(payload.reason ?? "No se pudo cambiar el correo.");
+        return;
+      }
+      setNotice("Solicitud de cambio de correo enviada. Revisa tu bandeja para confirmar.");
+      setEmailPassword("");
     } finally {
       setBusy(false);
     }
@@ -142,12 +170,33 @@ function AccountContent() {
             <input className="input" aria-label="Empresa" value={company} onChange={(e) => setCompany(e.target.value)} />
           </label>
           <label className="field">
-            Email
-            <input className="input bg-slate-50" aria-label="Email" value={profile.email ?? ""} disabled />
+            Email actual
+            <input className="input bg-slate-50" aria-label="Email actual" value={profile.email ?? ""} disabled />
           </label>
         </div>
         <div className="actions">
           <button type="submit" className="btn-primary" disabled={busy}>Guardar datos</button>
+        </div>
+      </form>
+
+      <form className="card card-pad" onSubmit={changeEmail} data-testid="email-form">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="panel-title">Cambiar correo electrónico</h2>
+          <span className="badge badge-contacted">Cuenta</span>
+        </div>
+        <div className="form-grid">
+          <label className="field sm:col-span-2">
+            Nuevo correo electrónico
+            <input className="input" aria-label="Nuevo correo electrónico" type="email" autoComplete="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+          </label>
+          <label className="field sm:col-span-1">
+            Contraseña actual
+            <input className="input" aria-label="Contraseña actual para cambiar correo" type="password" autoComplete="current-password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} />
+          </label>
+        </div>
+        <p className="panel-subtitle mt-2 text-xs">Recibirás un correo de confirmación en la nueva dirección para completar el cambio.</p>
+        <div className="actions">
+          <button type="submit" className="btn-primary" disabled={busy}>Solicitar cambio de correo</button>
         </div>
       </form>
 
