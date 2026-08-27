@@ -1,3 +1,5 @@
+"use client";
+
 import type { Profile } from "@/lib/auth/profile-client";
 import { fetchProfile } from "@/lib/auth/profile-client";
 import Link from "next/link";
