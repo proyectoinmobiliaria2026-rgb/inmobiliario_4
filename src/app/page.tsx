@@ -52,11 +52,11 @@ export default function HomePage() {
       </div>
 
       <div className="grid gap-8">
-        <section className="relative overflow-hidden rounded-3xl border border-white/20 px-6 py-10 shadow-xl sm:px-10">
+        <section className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 px-6 py-10 shadow-xl sm:px-10">
           <div
             aria-hidden
             className="absolute inset-0 -z-10 bg-cover bg-center"
-            style={{ backgroundImage: "url('/images/hero-apartment.jpg')" }}
+            style={{ backgroundImage: "url('/images/hero-apartment.svg')" }}
           />
           <div
             aria-hidden

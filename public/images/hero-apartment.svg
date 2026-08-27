@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Departamento amueblado">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8ecf3"/>
+      <stop offset="1" stop-color="#cdd6e4"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b98b5e"/>
+      <stop offset="1" stop-color="#9c7044"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a7c6f0"/>
+      <stop offset="1" stop-color="#e7f0ff"/>
+    </linearGradient>
+    <linearGradient id="sofa" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5b6ee1"/>
+      <stop offset="1" stop-color="#3f51c4"/>
+    </linearGradient>
+    <linearGradient id="rug" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f4c7a1"/>
+      <stop offset="0.5" stop-color="#eeb58a"/>
+      <stop offset="1" stop-color="#e3a376"/>
+    </linearGradient>
+  </defs>
+
+  <!-- room -->
+  <rect width="1600" height="620" fill="url(#wall)"/>
+  <rect y="620" width="1600" height="280" fill="url(#floor)"/>
+  <rect y="612" width="1600" height="10" fill="#8a6238"/>
+
+  <!-- window -->
+  <g>
+    <rect x="1040" y="120" width="420" height="360" rx="10" fill="#ffffff"/>
+    <rect x="1056" y="136" width="388" height="328" rx="6" fill="url(#sky)"/>
+    <line x1="1250" y1="136" x2="1250" y2="464" stroke="#ffffff" stroke-width="10"/>
+    <line x1="1056" y1="300" x2="1444" y2="300" stroke="#ffffff" stroke-width="10"/>
+    <circle cx="1160" cy="210" r="34" fill="#fff3c4" opacity="0.9"/>
+    <path d="M1056 464 L1180 330 L1320 430 L1444 320 L1444 464 Z" fill="#bcd6a8" opacity="0.7"/>
+  </g>
+
+  <!-- wall art -->
+  <g>
+    <rect x="180" y="170" width="180" height="130" rx="4" fill="#ffffff" stroke="#d3dae6" stroke-width="4"/>
+    <path d="M200 280 L250 210 L290 260 L320 220 L340 280 Z" fill="#9fb3d1"/>
+    <circle cx="320" cy="205" r="14" fill="#f6c453"/>
+  </g>
+
+  <!-- rug -->
+  <ellipse cx="720" cy="760" rx="430" ry="90" fill="url(#rug)"/>
+
+  <!-- sofa -->
+  <g>
+    <rect x="470" y="560" width="520" height="150" rx="24" fill="url(#sofa)"/>
+    <rect x="470" y="520" width="520" height="80" rx="24" fill="#4f61d8"/>
+    <rect x="500" y="540" width="150" height="60" rx="14" fill="#6f7ff0"/>
+    <rect x="670" y="540" width="150" height="60" rx="14" fill="#6f7ff0"/>
+    <rect x="840" y="540" width="120" height="60" rx="14" fill="#6f7ff0"/>
+    <rect x="450" y="690" width="40" height="70" rx="10" fill="#2f3da8"/>
+    <rect x="970" y="690" width="40" height="70" rx="10" fill="#2f3da8"/>
+  </g>
+
+  <!-- cushions -->
+  <rect x="520" y="540" width="70" height="70" rx="16" fill="#f4d35e" transform="rotate(-8 555 575)"/>
+  <rect x="860" y="540" width="70" height="70" rx="16" fill="#ee6c4d" transform="rotate(8 895 575)"/>
+
+  <!-- coffee table -->
+  <g>
+    <ellipse cx="730" cy="780" rx="120" ry="28" fill="#6b4a2b"/>
+    <rect x="615" y="780" width="14" height="40" fill="#4f351d"/>
+    <rect x="831" y="780" width="14" height="40" fill="#4f351d"/>
+    <ellipse cx="700" cy="770" rx="22" ry="10" fill="#ffffff" opacity="0.8"/>
+  </g>
+
+  <!-- floor lamp -->
+  <g>
+    <rect x="320" y="560" width="10" height="220" fill="#3a3a3a"/>
+    <path d="M295 560 L355 560 L340 510 L310 510 Z" fill="#f6c453"/>
+  </g>
+
+  <!-- plant -->
+  <g>
+    <path d="M1200 760 L1260 760 L1250 700 L1210 700 Z" fill="#c8772f"/>
+    <path d="M1230 700 C1190 650 1180 600 1210 560 C1230 600 1240 650 1230 700 Z" fill="#4f9d5d"/>
+    <path d="M1230 700 C1270 650 1290 610 1260 565 C1245 610 1235 655 1230 700 Z" fill="#3f8a4d"/>
+    <path d="M1230 700 C1210 660 1200 620 1220 585 C1235 620 1240 660 1230 700 Z" fill="#5bb06b"/>
+  </g>
+</svg>
