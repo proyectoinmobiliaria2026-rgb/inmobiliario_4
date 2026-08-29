@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Plan de ordenamiento CFDIGITAL</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; line-height: 1.5; margin: 0; padding: 32px 40px; }
+  h1 { color: #142657; border-bottom: 3px solid #1e3a8a; padding-bottom: 8px; }
+  h2 { color: #1e3a8a; margin-top: 26px; border-left: 4px solid #1e3a8a; padding-left: 10px; }
+  h3 { color: #b21f24; margin-top: 16px; }
+  code { background: #eef2fb; color: #142657; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  ul { margin: 6px 0 12px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  p { margin: 8px 0; }
+  .meta { color: #64748b; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 14px 0; }
+  th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; font-size: 13px; vertical-align: top; }
+  th { background: #eef2fb; color: #142657; }
+  .section { page-break-inside: avoid; }
+  @media print { body { padding: 14px 18px; } h2 { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+<h1>Plan de ordenamiento de CFDIGITAL (cambio mínimo)</h1>
+<p class="meta">Generado el 27/08/2026 · Propuesta previa a implementación, sin código.</p>
+
+<div class="section">
+<h2>A. Arquitectura propuesta</h2>
+<p>Se mantiene la misma base (Next.js App Router + Supabase + servicios existentes). El cambio central es <strong>convertir el detalle de propiedad en un "Expediente" de 7 pasos obligatorios y visibles</strong>, y separar claramente dos mundos que hoy se confunden:</p>
+<ul>
+<li><strong>Estado comercial de la propiedad</strong> (<code>properties.status</code>): Alta → En comercialización → Pausada → Cerrada → Archivada. Ya no significa "publicada en red social".</li>
+<li><strong>Publicación en redes</strong> (<code>publications.status</code>): borrador → programada → publicada (solo registro local, ver etiquetas de simulación).</li>
+</ul>
+<p>Tres principios:</p>
+<ol>
+<li><strong>Inicio = portada</strong> (sin métricas). Las métricas viven solo en Dashboard.</li>
+<li><strong>Expediente = una sola pantalla ordenada</strong> por los 7 pasos, reusando los endpoints que ya existen.</li>
+<li><strong>Honestidad de simulación</strong>: cualquier paso cuya generación sea mock (copies IA, reel, publicación social) lleva etiqueta "simulado" y no se contabiliza como terminado hasta que el usuario lo aprueba/genera de verdad.</li>
+</ol>
+</div>
+
+<div class="section">
+<h2>B. Pantallas afectadas</h2>
+<table>
+<tr><th>Pantalla</th><th>Cambio</th></tr>
+<tr><td><code>src/app/page.tsx</code> (Inicio)</td><td>Portada limpia: logo + imagen inmobiliaria + botón <strong>Crear propiedad</strong>. Se quitan KPIs y accesos a módulos.</td></tr>
+<tr><td><code>src/components/home/home-overview.tsx</code></td><td>Se mueve al Dashboard (deja de usarse en Inicio).</td></tr>
+<tr><td><code>src/app/dashboard/page.tsx</code> + <code>dashboard-summary.tsx</code></td><td>Tablero operativo con las 8 métricas reales.</td></tr>
+<tr><td><code>src/components/properties/properties-workbench.tsx</code></td><td>Se refactoriza el área de propiedad seleccionada en un <strong>Expediente de 7 secciones ordenadas</strong> (reusa media, content, publications, ficha).</td></tr>
+<tr><td><code>src/app/properties/[id]/ficha/page.tsx</code></td><td>Ficha técnica PDF "profesional" (mejorar estilos) y registrar <code>ficha_pdf_generated_at</code> al imprimir.</td></tr>
+<tr><td><code>src/lib/types/content.ts</code>, <code>property.ts</code>, <code>publication.ts</code>, <code>media.ts</code></td><td>Enums/etiquetas (TikTok, estados comerciales).</td></tr>
+<tr><td><code>src/components/layout/navbar.tsx</code></td><td>Logo en navbar (usar <code>public/images/logo.*</code> si existe).</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>C. Rutas / módulos que se reutilizan (sin duplicar)</h2>
+<ul>
+<li><strong>Datos:</strong> <code>GET/PUT /api/properties/[id]</code> (route.ts) y <code>property-service.ts</code>.</li>
+<li><strong>Fotos y staging:</strong> <code>/api/properties/[id]/media</code> (GET/POST) y <code>/media/[mediaId]</code> (PATCH <code>state</code>). El "staging" usa el <code>state</code> ya existente (<code>original</code>→<code>edited</code>/<code>generated</code>). <code>property-media-service.ts</code> y <code>validators/media.ts</code> se quedan igual.</li>
+<li><strong>Copies IA:</strong> <code>/api/properties/[id]/generate-content</code> (POST) + <code>/generations</code> (GET) y <code>content-generation-service.ts</code>. Solo se agrega el canal <code>tiktok</code>.</li>
+<li><strong>Título/descripción con IA:</strong> <code>POST /api/properties/ai-listing</code> (ya existe) → se usa para proponer título/descripción al final, no al crear.</li>
+<li><strong>Publicación:</strong> <code>/api/publications</code> (POST), <code>/schedule</code>, <code>/publish</code>, <code>/cancel</code> y <code>publication-service.ts</code> (se agrega <code>tiktok</code> al CHECK).</li>
+<li><strong>Dashboard:</strong> <code>/api/dashboard/summary/route.ts</code> + <code>dashboard-service.ts</code> (nuevas consultas de conteo).</li>
+<li><strong>Autenticación:</strong> sin cambios.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>D. Cambios de base de datos necesarios (migraciones nuevas)</h2>
+<ol>
+<li><strong>TikTok en publicaciones</strong> (relajar CHECK):
+<pre style="background:#f1f5f9;padding:8px;border-radius:6px;font-size:12px;">alter table public.publications drop constraint publications_platform_check;
+alter table public.publications add constraint publications_platform_check
+  check (platform in ('facebook','instagram','whatsapp','tiktok'));</pre></li>
+<li><strong>Tabla <code>property_reels</code></strong> (para el paso 4 "Generación y aprobación de reel"):
+<ul>
+<li><code>id, property_id FK, status check('pending','generated','approved','rejected'), storage_path text null, provider text, generated_by FK, approved_at timestamptz, created_at</code>.</li>
+<li>Índice <code>property_reels(property_id)</code>.</li>
+<li>Generación de reel es <strong>simulada</strong>: el sistema crea el registro <code>generated</code> y el usuario lo aprueba (<code>approved</code>). El dashboard solo cuenta <code>approved</code>.</li>
+</ul></li>
+<li><strong><code>properties.ficha_pdf_generated_at timestamptz</code></strong> (nullable) para saber si la ficha ya se generó (paso 5 y métrica).</li>
+<li><strong>Estado comercial:</strong> <code>properties.status</code> no tiene CHECK (es texto libre). Solo se cambia el vocabulario en la app (<code>PROPERTY_STATUSES</code>/<code>PROPERTY_STATUS_LABELS</code>) y, opcionalmente, un backfill:
+<pre style="background:#f1f5f9;padding:8px;border-radius:6px;font-size:12px;">update public.properties set status = 'active' where status = 'published';</pre></li>
+<li><strong>Índice</strong> <code>properties(ficha_pdf_generated_at)</code> y <code>properties(status)</code> ya existe.</li>
+</ol>
+<p>No se tocan <code>property_media</code>, <code>ai_generations</code> (channel es texto libre), ni <code>leads</code>.</p>
+</div>
+
+<div class="section">
+<h2>E. Riesgos</h2>
+<ul>
+<li><strong><code>properties.title</code> es NOT NULL:</strong> al quitar título del formulario hay que insertar un placeholder ("Propiedad sin título") y llenarlo después con IA; si no, el INSERT falla.</li>
+<li><strong>Renombrar "Publicar":</strong> el botón de inventario hoy cambia <code>status='published'</code> y la validación <code>publishProperty</code> exige descripción≥20, precio>0 y dirección. Hay que reemplazarlo por cambio de estado comercial y actualizar todas las referencias (<code>PROPERTY_STATUS_LABELS</code>, badges, filtros, dashboard <code>propertiesPublished</code>).</li>
+<li><strong>Refactor del expediente:</strong> es el cambio más grande e interviene el <code>properties-workbench.tsx</code> que ya tiene alta, edición, filtros, paginación y login. Riesgo de romper esas funciones si no se aísla bien el "Expediente".</li>
+<li><strong>TikTok sin migración</strong> rompe el INSERT en <code>publications</code> (CHECK).</li>
+<li><strong>URLs firmadas de media caducan:</strong> la galería de fotos/staging puede dejar de mostrar imágenes; el expediente debe refrescarlas.</li>
+<li><strong>Mock provider:</strong> los copies se etiquetan "simulado"; al activar OpenAI real cambian formatos y podrían fallar pruebas (<code>mock-listing.test.ts</code>).</li>
+<li><strong>Publicación social es simulada:</strong> debe quedar claro que no hay llamada real a FB/IG/TikTok; si algún día se conecta, el flujo de <code>publish</code> y <code>scheduler</code> cambia.</li>
+<li><strong>Definición de "pendientes de fotos/staging":</strong> debe ser consultable y real (ej. pendiente de fotos = propiedades sin <code>property_media</code> imagen; pendiente de staging = existe media con <code>state='original'</code>).</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>F. Plan de implementación por fases</h2>
+<ul>
+<li><strong>Fase 0 — BD:</strong> migración TikTok + <code>property_reels</code> + <code>ficha_pdf_generated_at</code> + backfill de estados.</li>
+<li><strong>Fase 1 — Inicio portada:</strong> <code>page.tsx</code> solo logo/imagen/botón "Crear propiedad" (link a <code>/properties</code> abriendo alta); quitar KPIs; <code>home-overview</code> se usa solo en Dashboard.</li>
+<li><strong>Fase 2 — Estado comercial:</strong> renombrar "Publicar" → estado comercial (Alta/En comercialización/Pausada/Cerrada/Archivada); actualizar tipos, labels, badges, filtros y dashboard.</li>
+<li><strong>Fase 3 — Alta sin título/descripción:</strong> quitar esos campos del formulario (placeholder en BD); agregar acción "Generar título y descripción con IA" que llama <code>ai-listing</code> y guarda en la propiedad al final del expediente.</li>
+<li><strong>Fase 4 — Expediente ordenado:</strong> refactor de <code>properties-workbench</code> en componente <code>Expediente</code> con 7 secciones visibles en orden (reusa endpoints).</li>
+<li><strong>Fase 5 — Staging de fotos:</strong> sección 3 usa <code>state</code> de media (original→edited/generated) + indicador de "pendientes de staging".</li>
+<li><strong>Fase 6 — Reel:</strong> <code>property_reels</code> + endpoints mínimos <code>GET/POST /reels</code> y <code>PATCH /reels/[id]</code> (aprobar); sección 4 con etiqueta "simulado" hasta aprobar.</li>
+<li><strong>Fase 7 — Ficha PDF profesional:</strong> mejorar estilos de <code>ficha/page.tsx</code> y registrar <code>ficha_pdf_generated_at</code> al imprimir; sección 5.</li>
+<li><strong>Fase 8 — Copies IA + TikTok:</strong> agregar <code>tiktok</code> a <code>CONTENT_CHANNELS</code> y <code>PLATFORMS</code>; sección 6; badge "proveedor simulado" cuando <code>provider='mock'</code>.</li>
+<li><strong>Fase 9 — Revisión/programación/publicación:</strong> sección 7 reusa <code>publications</code>; etiqueta "registro local (sin conexión a red social)".</li>
+<li><strong>Fase 10 — Dashboard operativo:</strong> las 8 métricas reales en <code>/api/dashboard/summary</code> + <code>dashboard-summary.tsx</code> (borrador, pendientes de fotos, pendientes de staging, reel listo, ficha PDF generada, copies pendientes, publicaciones programadas, publicaciones realizadas).</li>
+<li><strong>Fase 11 — Etiquetas de simulación:</strong> badges "simulado" en copies (mock), reel y publicaciones; verificar que ningún paso se muestre terminado si es simulación.</li>
+<li><strong>Fase 12 — Pruebas/lint:</strong> <code>next lint</code> + <code>vitest</code> + revisar e2e (<code>properties-ui</code>, <code>dashboard</code>, <code>publications</code>).</li>
+</ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Diagnóstico CFDIGITAL</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; line-height: 1.5; margin: 0; padding: 32px 40px; }
+  h1 { color: #142657; border-bottom: 3px solid #1e3a8a; padding-bottom: 8px; }
+  h2 { color: #1e3a8a; margin-top: 28px; border-left: 4px solid #1e3a8a; padding-left: 10px; }
+  h3 { color: #b21f24; margin-top: 18px; }
+  code { background: #eef2fb; color: #142657; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  ul { margin: 6px 0 12px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  p { margin: 8px 0; }
+  .meta { color: #64748b; font-size: 13px; }
+  .section { page-break-inside: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  @media print { body { padding: 14px 18px; } h2 { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+<h1>Diagnóstico de CFDIGITAL — Estructura actual de la aplicación</h1>
+<p class="meta">Generado el 27/08/2026 · Tarea de diagnóstico únicamente (sin modificaciones de código).</p>
+
+<div class="section">
+<h2>1. Estructura actual de navegación</h2>
+<p>La barra (<code>src/components/layout/navbar.tsx</code>) tiene 6 enlaces: <strong>Inicio, Dashboard, Propiedades, Leads, Publicaciones, Mi cuenta</strong>. No existe menú "Multimedia" ni página <code>/login</code>.</p>
+<p>El "login" no es una pantalla central: cada módulo (Propiedades, Leads, Publicaciones) renderiza su propio formulario de acceso inline (<code>properties-workbench.tsx:686</code>, <code>leads-workbench.tsx</code>, <code>publications-workbench.tsx:209</code>). El botón "Acceder" de la navbar lleva a <code>/properties</code>, que dispara ese login embebido. Registro y cuenta son páginas aparte (<code>/register</code>, <code>/account</code>).</p>
+<p>La autenticación es real vía Supabase (<code>src/app/api/auth/*</code>: login, register, logout, session, refresh, profile, change-password, change-email).</p>
+</div>
+
+<div class="section">
+<h2>2. Qué aparece en cada pantalla</h2>
+
+<h3>Inicio (<code>src/app/page.tsx</code> + <code>home/home-overview.tsx</code>)</h3>
+<ul>
+<li>Hero con imagen de departamento + título CFDIGITAL.</li>
+<li>Bloque de KPIs en tiempo real (totales de propiedades, publicadas, borrador, leads, multimedia, imágenes, videos, archivadas) leyendo <code>/api/dashboard/summary</code>.</li>
+<li>Tarjetas de acceso a los 4 módulos.</li>
+</ul>
+
+<h3>Dashboard (<code>dashboard/page.tsx</code> + <code>dashboard-summary.tsx</code>)</h3>
+<ul>
+<li>Mismos 8 KPIs que Inicio, más tabla "Publicadas recientemente" (título, ciudad, fecha). Datos reales desde <code>/api/dashboard/summary</code>.</li>
+</ul>
+
+<h3>Propiedades (<code>properties/page.tsx</code> + <code>properties-workbench.tsx</code>)</h3>
+<ul>
+<li>Formulario de alta/edición (título, tipo, operación, precio, recámaras/baños/estacionamiento, dirección, amenidades, requisitos de contratación, descripción).</li>
+<li>Filtros (búsqueda, estado, tipo, operación).</li>
+<li>Inventario con acciones: Editar, <strong>Publicar</strong> (cambia <code>status</code> de la propiedad), <strong>Media</strong>, <strong>Contenido</strong>, <strong>Generar PDF</strong>, Eliminar.</li>
+<li>Panel <strong>Multimedia</strong> por propiedad (subir imagen/video, marcar "procesada", eliminar).</li>
+<li>Panel <strong>Contenido IA</strong> por propiedad (generar copy por canal).</li>
+</ul>
+
+<h3>Multimedia</h3>
+<p>No es menú; es el sub-panel "Media" dentro de Propiedades (<code>media-panel</code>, líneas 972-1029). Sube <code>image</code> o <code>video</code> a Supabase Storage, muestra URL firmada, y permite cambiar un "estado" (<code>original</code>/<code>processed</code>/<code>edited</code>/<code>generated</code>). No hay editor ni procesamiento real: "Marcar procesada" solo cambia un flag en BD.</p>
+
+<h3>Leads (<code>leads/page.tsx</code> + <code>leads-workbench.tsx</code>)</h3>
+<p>CRM: alta de contactos, estados, recordatorios (uso real de <code>/api/leads</code>).</p>
+
+<h3>Publicaciones (<code>publications/page.tsx</code> + <code>publications-workbench.tsx</code>)</h3>
+<ul>
+<li>Formulario para crear publicación (propiedad, canal, copia, hashtags, CTA, fecha opcional).</li>
+<li>Botón "Traer copia IA" (carga una generación ya creada en Propiedades).</li>
+<li>Panel "Scheduler" con botón "Ejecutar scheduler" y cola de jobs.</li>
+<li>Cola de publicaciones con Programar / Publicar ahora / Cancelar / Eliminar.</li>
+</ul>
+
+<h3>Ficha / PDF (<code>properties/[id]/ficha/page.tsx</code>)</h3>
+<p>Pantalla de detalle; el "PDF" es <code>window.print()</code> del navegador (impresión a PDF), no hay librería de PDF server-side.</p>
+</div>
+
+<div class="section">
+<h2>3. Flujo actual para crear y publicar una propiedad</h2>
+<ol>
+<li>Login inline en Propiedades.</li>
+<li>"Crear propiedad" → <code>POST /api/properties</code> (borrador).</li>
+<li>En el inventario, botón <strong>Media</strong> → subir fotos/videos (<code>POST /api/properties/{id}/media</code>, a Supabase Storage).</li>
+<li>Botón <strong>Contenido</strong> → "Generar copy" por canal (<code>POST /api/properties/{id}/generate-content</code>) → guarda en <code>ai_generations</code>. Provider por defecto = <strong>mock</strong>.</li>
+<li>Desde Publicaciones: elegir propiedad + canal, "Traer copia IA" (lee <code>ai_generations</code>), crear borrador o programar (<code>/api/publications</code> + <code>/schedule</code>).</li>
+<li>"Publicar ahora" → <code>publishPublicationNow</code> solo cambia <code>status</code> a <code>published</code> en BD. El scheduler (<code>/api/scheduler/run</code>) corre jobs vencidos y también los marca <code>published</code>.</li>
+<li>"Generar PDF" abre la ficha e imprime.</li>
+</ol>
+<p><strong>No existe integración real con Facebook/Instagram/WhatsApp</strong>: "publicar" es solo un cambio de estado en la base de datos.</p>
+</div>
+
+<div class="section">
+<h2>4. Dónde se suben fotos y cuántas permite</h2>
+<ul>
+<li>En el panel Media de cada propiedad (<code>submitMedia</code>, línea 606). Endpoint <code>src/app/api/properties/[id]/media/route.ts</code> → <code>lib/services/property-media-service.ts</code>.</li>
+<li>Límites (<code>lib/validators/media.ts</code>): imagen ≤ 10 MB, video ≤ 200 MB. Tipos <code>image/*</code> y <code>video/*</code>.</li>
+<li><strong>No hay límite de cantidad</strong>: puede subir tantas fotos/videos como quiera (solo restricción de tamaño por archivo). Se muestran con URL firmada (<code>signed_url</code>); las imágenes se renderizan en miniatura.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>5. Staging, reel/video y PDF — cómo funcionan realmente</h2>
+<ul>
+<li><strong>Staging:</strong> no existe como funcionalidad. Lo más cercano es el campo <code>state</code> de cada media (<code>original</code>/<code>processed</code>/<code>edited</code>/<code>generated</code>) y el botón "Marcar procesada". Es solo un flag en BD; no hay área de previsualización/edición, ni "staging" de publicaciones.</li>
+<li><strong>Reel/video:</strong> no hay generación. Solo se <strong>suben</strong> videos (≤200 MB) y se muestra un enlace "Ver video". No hay edición, recorte, ni creación de reel.</li>
+<li><strong>PDF:</strong> <code>window.print()</code> en la ficha (<code>ficha/page.tsx:80</code>). Sin servidor de PDF.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>6. Dónde se generan copies y para qué redes</h2>
+<ul>
+<li><strong>Generación:</strong> panel "Contenido IA" de Propiedades (<code>generateContent</code>, <code>content-panel</code> línea 1031). Canales: <strong>Facebook, Instagram, WhatsApp</strong> (<code>CONTENT_CHANNELS</code> en <code>lib/types/content.ts</code> y <code>properties-workbench.tsx:86</code>).</li>
+<li>Guarda en tabla <code>ai_generations</code> (<code>content-generation-service.ts</code>).</li>
+<li><strong>Reutilización:</strong> en Publicaciones, "Traer copia IA" (<code>fetchAiCopy</code>, líneas 124-134) busca la generación existente para el canal seleccionado; si no existe, pide generarla antes desde Propiedades.</li>
+<li>El texto lo produce <code>lib/ai/providers/mock-provider.ts</code> (plantilla determinista). Hay stub de OpenAI (<code>openai-provider.ts</code>) pero requiere <code>AI_PROVIDER=openai</code> y <code>AI_API_KEY</code> (hoy vacíos en <code>.env</code>, así que <strong>es simulación</strong>).</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>7. Duplicidades y puntos confusos</h2>
+<ul>
+<li><strong>Doble sentido de "Publicar":</strong> en el inventario de Propiedades cambia el <code>status</code> de la propiedad (borrador→publicada); en Publicaciones significa "postear a red social". Mismo verbo, acciones distintas.</li>
+<li><strong>Copies en dos sitios:</strong> se generan en Propiedades y se consumen en Publicaciones; el usuario debe saber el orden (generar primero en Propiedades) o "Traer copia IA" falla.</li>
+<li><strong>Login duplicado:</strong> cada workbench tiene su propio formulario de login embebido; no hay página <code>/login</code> única ni estado global de sesión compartido entre módulos (aunque la cookie SÍ es compartida).</li>
+<li><strong>Inicio vs Dashboard:</strong> ambos muestran los mismos KPIs (HomeOverview ≈ DashboardSummaryView) — redundancia.</li>
+<li><strong>"Multimedia" prometido en textos</strong> (hero, descripción) pero no es menú navegable; vive escondido dentro de Propiedades.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>8. Funciones reales, incompletas y simuladas</h2>
+<h3>Reales (funcionan con datos/BD)</h3>
+<ul>
+<li>CRUD de propiedades, leads, publicaciones.</li>
+<li>Subida de multimedia a Supabase Storage (con URL firmada).</li>
+<li>Autenticación (login, registro, logout, cambio de contraseña/correo).</li>
+<li>Dashboard/KPIs y ficha con impresión a PDF.</li>
+<li>Validaciones de formularios y límites de archivo.</li>
+</ul>
+<h3>Incompletas / simuladas (interfaz o mock)</h3>
+<ul>
+<li><strong>Copies de IA:</strong> provider mock por defecto; no es LLM real salvo configurar OpenAI.</li>
+<li><strong>Publicación en redes sociales:</strong> solo cambia estado en BD; no hay OAuth ni llamadas a APIs de FB/IG/WA.</li>
+<li><strong>Scheduler:</strong> corre jobs y los marca publicados, pero no postea a ningún lado.</li>
+<li><strong>Staging / edición de media:</strong> solo un flag de estado, sin herramienta.</li>
+<li><strong>Reel/video:</strong> solo carga; sin generación ni edición.</li>
+<li><strong>PDF:</strong> depende de la impresión del navegador (pierde estilos, no es automático).</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>9. Archivos o módulos involucrados</h2>
+<ul>
+<li>Navegación/layout: <code>components/layout/navbar.tsx</code>, <code>app/layout.tsx</code>.</li>
+<li>Inicio/Dashboard: <code>app/page.tsx</code>, <code>home/home-overview.tsx</code>, <code>dashboard/page.tsx</code>, <code>dashboard/dashboard-summary.tsx</code>, <code>api/dashboard/summary/route.ts</code>.</li>
+<li>Propiedades/Alta/Media/Contenido: <code>properties/page.tsx</code>, <code>properties/properties-workbench.tsx</code>, <code>properties/[id]/ficha/page.tsx</code>, <code>api/properties/route.ts</code>, <code>api/properties/[id]/route.ts</code>, <code>api/properties/[id]/media/route.ts</code>, <code>api/properties/[id]/media/[mediaId]/route.ts</code>, <code>api/properties/[id]/generate-content/route.ts</code>, <code>api/properties/[id]/generations/route.ts</code>, <code>api/properties/ai-listing/route.ts</code>, <code>lib/services/property-service.ts</code>, <code>property-media-service.ts</code>, <code>content-generation-service.ts</code>, <code>lib/validators/media.ts</code>, <code>lib/types/media.ts</code>, <code>lib/types/content.ts</code>.</li>
+<li>IA: <code>lib/ai/factory.ts</code>, <code>providers/mock-provider.ts</code>, <code>providers/openai-provider.ts</code>, <code>ai-service.ts</code>.</li>
+<li>Publicaciones/Scheduler: <code>publications/page.tsx</code>, <code>publications/publications-workbench.tsx</code>, <code>api/publications/route.ts</code>, <code>api/publications/[id]/{schedule,publish,cancel}/route.ts</code>, <code>api/scheduler/jobs/route.ts</code>, <code>api/scheduler/run/route.ts</code>, <code>lib/services/publication-service.ts</code>, <code>scheduler-service.ts</code>.</li>
+<li>Leads: <code>leads/page.tsx</code>, <code>leads/leads-workbench.tsx</code>, <code>api/leads/*</code>.</li>
+<li>Auth/Cuenta: <code>api/auth/*</code>, <code>account/page.tsx</code>, <code>register/page.tsx</code>.</li>
+<li>Datos: <code>supabase/migrations/*</code> (properties, property_media, ai_generations, publications, scheduler_jobs, leads, auth.users).</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>10. Riesgos de modificar el flujo actual</h2>
+<ul>
+<li><strong>"Publicar" con doble significado:</strong> cualquier cambio en el botón de inventario de Propiedades afecta el <code>status</code> de la propiedad usado en filtros y dashboard; confundirlo con publicación social rompería reportes.</li>
+<li><strong>Acoplamiento ai_generations ↔ Publicaciones:</strong> mover la generación de copies rompe el botón "Traer copia IA" si no se actualiza el canal/clave.</li>
+<li><strong>Provider mock marcado TEMPORAL:</strong> <code>mock-provider.ts</code> y <code>factory.ts</code> dicen "debe reemplazarse". Cambiar a OpenAI real requiere <code>AI_API_KEY</code> y puede alterar el formato de copies y las pruebas (<code>mock-listing.test.ts</code>, <code>mock-ai-service.test.ts</code>).</li>
+<li><strong>URLs firmadas de media:</strong> las imágenes usan <code>signed_url</code> (caducan); si se cambia la lógica de Storage, la galería puede dejar de mostrar fotos.</li>
+<li><strong>Scheduler depende de <code>CRON_SECRET</code></strong> y de un cliente service-role; modificar <code>run/route.ts</code> sin ese secreto rompe la ejecución automática.</li>
+<li><strong>Sin límite de cantidad de fotos:</strong> subir muchas puede inflar Storage; cualquier límite nuevo rompería el validador actual (<code>media.ts</code>).</li>
+<li><strong>Sesión por cookie compartida:</strong> los logins embebidos asumen la misma cookie; centralizar login o usar estado global puede requerir refactor de los 3 workbenches.</li>
+</ul>
+</div>
+
+</body>
+</html>

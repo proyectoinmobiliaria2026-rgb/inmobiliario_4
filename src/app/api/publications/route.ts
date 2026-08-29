@@ -1,5 +1,5 @@
 import { UnauthorizedError, requireAuthContext } from "@/lib/auth/route-auth";
-import { createPublication, listPublications } from "@/lib/services/publication-service";
+import { createPublication, listPublications, getPublicationsSummaryByMode } from "@/lib/services/publication-service";
 import { parseCreatePublicationInput } from "@/lib/validators/publication";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,15 +12,21 @@ function errorResponse(error: unknown) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { supabase } = await requireAuthContext(request);
+    const { supabase, user } = await requireAuthContext(request);
     const params = request.nextUrl.searchParams;
     const pageRaw = Number(params.get("page") ?? "1");
     const pageSizeRaw = Number(params.get("pageSize") ?? "10");
     const page = Number.isInteger(pageRaw) && pageRaw >= 1 ? pageRaw : 1;
     const pageSize = Number.isInteger(pageSizeRaw) && pageSizeRaw >= 1 && pageSizeRaw <= 100 ? pageSizeRaw : 10;
+    const summary = params.get("summary");
+    if (summary === "by_mode") {
+      const data = await getPublicationsSummaryByMode(supabase, user.id);
+      return NextResponse.json({ ok: true, data });
+    }
     const data = await listPublications(supabase, {
       propertyId: params.get("propertyId") ?? undefined,
       platform: params.get("platform") ?? undefined,
+      mode: params.get("mode") ?? undefined,
       status: params.get("status") ?? undefined,
       page,
       pageSize

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Plan corregido CFDIGITAL</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; line-height: 1.5; margin: 0; padding: 32px 40px; }
+  h1 { color: #142657; border-bottom: 3px solid #1e3a8a; padding-bottom: 8px; }
+  h2 { color: #1e3a8a; margin-top: 26px; border-left: 4px solid #1e3a8a; padding-left: 10px; }
+  h3 { color: #b21f24; margin-top: 16px; }
+  code { background: #eef2fb; color: #142657; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  ul { margin: 6px 0 12px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  p { margin: 8px 0; }
+  .meta { color: #64748b; font-size: 13px; }
+  pre { background: #f1f5f9; padding: 8px; border-radius: 6px; font-size: 12px; white-space: pre-wrap; }
+  .section { page-break-inside: avoid; }
+  @media print { body { padding: 14px 18px; } h2 { page-break-after: avoid; } }
+</style>
+</head>
+<body>
+<h1>Plan corregido — CFDIGITAL (ordenamiento, sin simulaciones como terminadas)</h1>
+<p class="meta">Generado el 27/08/2026 · Propuesta previa a implementación, sin código.</p>
+
+<div class="section">
+<h2>Principio rector añadido</h2>
+<p>Todo paso cuya generación dependa de un proveedor externo (staging IA, reel/video, PDF profesional, redes sociales) se comporta así:</p>
+<ul>
+<li>Si el proveedor <strong>no está conectado</strong>, el expediente y el dashboard muestran explícitamente <em>"Pendiente de integración de …"</em> y <strong>no se crea ningún registro <code>generated</code>/aprobado ni se contabiliza como hecho</strong>.</li>
+<li>Si el proveedor <strong>está conectado</strong> (Entrega 2), el registro solo se crea cuando la generación es real y el usuario lo aprueba.</li>
+<li>Se usan feature flags por env (<code>STAGING_PROVIDER</code>, <code>REEL_PROVIDER</code>, <code>AI_PROVIDER</code>, <code>SOCIAL_INTEGRATION</code>) para decidir modo real vs. pendiente.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Ajustes obligatorios incorporados</h2>
+<ol>
+<li><strong>Staging:</strong> no es solo el <code>state</code> de media. El staging real genera y guarda una <strong>nueva imagen amueblada/procesada</strong> (<code>kind='image'</code>, <code>derived_from</code> = original), conserva la original y permite previsualizar ambas. Sin proveedor: el paso 3 dice <em>"Pendiente de integración de staging"</em> y no crea nada.</li>
+<li><strong>Reel:</strong> sin proveedor real de video, el paso 4 dice <em>"Generación de reel pendiente de integración"</em>; <strong>no se crea <code>property_reels</code>, no se aprueba, y el dashboard no tiene métrica de reel listo</strong> en Entrega 1.</li>
+<li><strong>Ficha técnica:</strong> <code>window.print()</code> NO es "PDF generado". Hasta tener PDF real, el estado es <em>"Vista imprimible disponible"</em>. El conteo "ficha PDF generada" solo existe en Entrega 2.</li>
+<li><strong>Alta:</strong> en lugar de "Propiedad sin título", se genera folio interno automático <code>CF-000123</code> (visible y usado como identificador). Título comercial y descripción se generan al final con IA y quedan editables antes de continuar.</li>
+<li><strong>Dashboard/publicaciones:</strong> cuatro estados separados y honestos:
+<ul>
+<li><em>Publicación preparada</em> = borrador local.</li>
+<li><em>Programada</em> = <code>status='scheduled'</code>.</li>
+<li><em>Registro interno marcado como publicado</em> = <code>status='published'</code> sin confirmación externa (etiquetado así).</li>
+<li><em>Confirmada en red social</em> = solo con integración oficial (Entrega 2). Nunca se cuenta/etiqueta como confirmada en FB/IG/TikTok sin confirmación real.</li>
+</ul></li>
+</ol>
+</div>
+
+<div class="section">
+<h2>Entrega 1 — Experiencia ordenada y honesta (sin integraciones externas)</h2>
+<ul>
+<li><strong>Inicio portada:</strong> logo + imagen inmobiliaria + botón "Crear propiedad". Sin KPIs.</li>
+<li><strong>Dashboard operativo</strong> con métricas reales y marcadores honestos:
+<ul>
+<li>Propiedades en borrador.</li>
+<li>Pendientes de fotos (sin media imagen).</li>
+<li>Pendientes de staging / <em>Pendiente de integración de staging</em> (propiedades con fotos pero sin versión amueblada; etiqueta honesta).</li>
+<li><em>Vista imprimible disponible</em> (no es "PDF generada").</li>
+<li>Copies pendientes (canales Facebook/Instagram/TikTok sin <code>ai_generations</code>), con badge "simulado" cuando <code>provider='mock'</code>.</li>
+<li>Publicaciones programadas (<code>scheduled</code>).</li>
+<li>Publicaciones realizadas = registros internos <code>published</code>, etiquetados <em>"registro interno, sin confirmación de red social"</em>.</li>
+<li>Reel y confirmación social: <em>"Pendiente de integración"</em> (no contados).</li>
+</ul></li>
+<li><strong>Estados comerciales:</strong> renombrar "Publicar" → ciclo Alta / En comercialización / Pausada / Cerrada / Archivada.</li>
+<li><strong>Alta con folio <code>CF-000123</code></strong>; título/descripción generados al final vía <code>ai-listing</code>, editables.</li>
+<li><strong>Expediente de 7 pasos</strong> en orden, reusando endpoints existentes.</li>
+<li><strong>TikTok</strong> como canal de contenido y publicación.</li>
+<li><strong>Copies IA</strong> etiquetadas "simulado" (mock) hasta conectar OpenAI.</li>
+<li><strong>Publicación local</strong> etiquetada correctamente (registro interno, no confirmada).</li>
+<li><strong>Paso 3 (staging):</strong> <em>"Pendiente de integración de staging"</em> (sin imagen falsa).</li>
+<li><strong>Paso 4 (reel):</strong> <em>"Generación de reel pendiente de integración"</em> (sin tabla ni registro).</li>
+<li><strong>Paso 5 (ficha):</strong> <em>"Vista imprimible disponible"</em> (print del navegador, sin contar como PDF).</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Entrega 2 — Integraciones reales</h2>
+<ul>
+<li><strong>Staging real:</strong> proveedor IA genera imagen amueblada, se guarda como media derivada (<code>derived_from</code>), se conserva original, previsualización lado a lado; aprobación del usuario.</li>
+<li><strong>Reel real:</strong> proveedor de video; crea <code>property_reels</code> solo cuando la generación es real; aprobación; métrica "reel listo" en dashboard.</li>
+<li><strong>PDF descargable profesional:</strong> generación con diseño estable (ruta server o librería client) → estado <em>"Ficha PDF generada"</em> y conteo real en dashboard.</li>
+<li><strong>Redes sociales reales:</strong> integración oficial FB/IG/TikTok con confirmación; estado <em>"Confirmada en red social"</em>; métrica de confirmadas en dashboard.</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Archivos y migraciones afectados</h2>
+
+<h3>Migraciones — Entrega 1</h3>
+<ul>
+<li><strong>M1 — TikTok:</strong> relajar <code>publications_platform_check</code> a <code>('facebook','instagram','whatsapp','tiktok')</code>.</li>
+<li><strong>M2 — Folio:</strong>
+<pre>create sequence properties_folio_seq;
+alter table properties add column folio text not null unique
+  default 'CF-' || lpad(nextval('properties_folio_seq')::text, 6, '0');</pre>
+(+ índice)</li>
+<li><strong>M3 — Staging derivado:</strong> <code>alter table property_media add column derived_from uuid references property_media(id) on delete set null;</code> (+ índice). El <code>state</code> se queda igual; <code>generated</code> solo se usará con proveedor real.</li>
+<li><strong>M4 — Backfill de estados:</strong> <code>update properties set status='active' where status='published';</code></li>
+</ul>
+
+<h3>Migraciones — Entrega 2</h3>
+<ul>
+<li><strong>M5 — Reel:</strong> crear <code>property_reels</code> (<code>id, property_id, status check('pending','generated','approved','rejected'), storage_path, provider, generated_by, approved_at, created_at</code>) + índice.</li>
+<li><strong>M6 — Config/feature flags:</strong> tabla <code>integrations_config</code> o variables de entorno (<code>STAGING_PROVIDER</code>, <code>REEL_PROVIDER</code>, <code>SOCIAL_INTEGRATION</code>, <code>AI_PROVIDER</code>); sin tabla si se usan solo env.</li>
+</ul>
+
+<h3>Archivos/módulos — Entrega 1</h3>
+<ul>
+<li><code>src/app/page.tsx</code> (portada limpia).</li>
+<li><code>src/components/home/home-overview.tsx</code> (usado solo en Dashboard).</li>
+<li><code>src/app/dashboard/page.tsx</code>, <code>src/components/dashboard/dashboard-summary.tsx</code>.</li>
+<li><code>src/app/api/dashboard/summary/route.ts</code>, <code>src/lib/services/dashboard-service.ts</code> (nuevas consultas reales + marcadores honestos).</li>
+<li><code>src/lib/types/property.ts</code> (estados comerciales + labels), <code>src/lib/types/content.ts</code> (<code>CONTENT_CHANNELS</code> + <code>tiktok</code>), <code>src/lib/types/publication.ts</code> (<code>PLATFORMS</code> + <code>tiktok</code>, labels de estados), <code>src/lib/types/media.ts</code> (<code>derived_from</code>).</li>
+<li><code>src/components/properties/properties-workbench.tsx</code> → se extrae <code>src/components/properties/property-expediente.tsx</code> (7 secciones ordenadas, reusa endpoints).</li>
+<li><code>src/app/api/properties/route.ts</code> (alta con folio), <code>src/app/api/properties/[id]/route.ts</code> (leer/actualizar folio, título, descripción).</li>
+<li><code>src/lib/services/property-service.ts</code> (generación de folio en create).</li>
+<li><code>src/lib/validators/property.ts</code> (el título inicial es el folio; descripción sigue opcional; al final se exige título comercial editable).</li>
+<li><code>src/app/api/properties/ai-listing/route.ts</code> (reusar para título/descripción al final).</li>
+<li><code>src/app/properties/[id]/ficha/page.tsx</code> (etiqueta "Vista imprimible disponible", sin marcar "PDF generado").</li>
+<li><code>src/components/layout/navbar.tsx</code> (logo).</li>
+</ul>
+
+<h3>Archivos/módulos — Entrega 2</h3>
+<ul>
+<li><strong>Staging:</strong> <code>src/app/api/properties/[id]/media/route.ts</code> (POST derivado), <code>src/lib/services/property-media-service.ts</code>, <code>src/lib/validators/media.ts</code>, nuevo <code>src/lib/services/staging-service.ts</code>.</li>
+<li><strong>Reel:</strong> <code>src/app/api/properties/[id]/reels/route.ts</code>, <code>src/app/api/properties/[id]/reels/[reelId]/route.ts</code>, <code>src/lib/services/reel-service.ts</code>.</li>
+<li><strong>PDF:</strong> <code>src/app/api/properties/[id]/ficha-pdf/route.ts</code> (PDF real) o generador client; <code>src/app/properties/[id]/ficha/page.tsx</code> (descargable).</li>
+<li><strong>Social:</strong> <code>src/app/api/publications/[id]/publish/route.ts</code> + <code>src/lib/services/publication-service.ts</code> (confirmación real), nuevo <code>src/lib/services/social-integration.ts</code> (FB/IG/TikTok).</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Riesgos relevantes (honestidad sobre simulación)</h2>
+<ul>
+<li><strong>Flags de integración:</strong> el modo "real vs pendiente" debe venir de env/config, no de datos falsos; si falta el flag, el paso nunca se marca terminado.</li>
+<li><strong>Folio único:</strong> la secuencia debe ser atómica; respetar formato <code>CF-000123</code>.</li>
+<li><strong><code>title</code> NOT NULL:</strong> al quitarlo del formulario, el folio cubre el NOT NULL hasta que la IA genere el título comercial.</li>
+<li><strong>TikTok sin M1</strong> rompe INSERT en <code>publications</code>.</li>
+<li><strong>Reel en Entrega 1:</strong> prohibido crear registros; el dashboard no debe mostrar "reel listo".</li>
+<li><strong>Ficha:</strong> <code>window.print()</code> no debe escribir <code>ficha_pdf_generated_at</code> en Entrega 1.</li>
+<li><strong>Publicaciones:</strong> <code>confirmed_at</code> solo se setea con integración real; en Entrega 1 todo <code>published</code> es "registro interno".</li>
+<li><strong>Mock provider:</strong> copies claramente etiquetadas "simulado"; al conectar OpenAI cambian formatos (posible impacto en <code>mock-listing.test.ts</code>).</li>
+<li><strong>Media firmadas caducan:</strong> la previsualización de staging/original debe refrescar URLs.</li>
+</ul>
+</div>
+
+</body>
+</html>

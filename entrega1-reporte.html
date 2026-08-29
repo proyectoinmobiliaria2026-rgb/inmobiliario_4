@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte Final — Entrega 1 (CF Digital)</title>
+<style>
+  body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 900px; margin: 40px auto; padding: 0 20px; color: #1e293b; }
+  h1 { color: #0f172a; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; }
+  h2 { color: #1e3a8a; margin-top: 32px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
+  h3 { color: #334155; margin-top: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.95rem; }
+  th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+  th { background: #f1f5f9; font-weight: 600; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.9em; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 16px; border-radius: 8px; overflow: auto; font-size: 0.85rem; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .section { page-break-inside: avoid; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #cbd5e1; font-size: 0.85rem; color: #64748b; }
+</style>
+</head>
+<body>
+<h1>Reporte Final — Entrega 1 (CF Digital)</h1>
+<p><strong>Commit:</strong> <code>73cc656</code> | <strong>Rama:</strong> <code>main</code> | <strong>Push:</strong> <code>origin/main</code></p>
+
+<h2>1. Archivos modificados (17) + migración (1)</h2>
+<table>
+<thead><tr><th>Archivo</th><th>Tipo</th></tr></thead>
+<tbody>
+<tr><td><code>src/app/page.tsx</code></td><td>portada limpia</td></tr>
+<tr><td><code>src/app/page.test.tsx</code></td><td>test actualizado</td></tr>
+<tr><td><code>src/app/globals.css</code></td><td>badges <code>active/paused/closed/simulado</code>, <code>.exp-step</code></td></tr>
+<tr><td><code>src/app/properties/[id]/ficha/page.tsx</code></td><td>etiqueta “Vista imprimible disponible”</td></tr>
+<tr><td><code>src/components/dashboard/dashboard-summary.tsx</code></td><td>métricas reales + flags de integración</td></tr>
+<tr><td><code>src/components/properties/properties-workbench.tsx</code></td><td>expediente 7 pasos, estado comercial, folio, TikTok, badges simulados</td></tr>
+<tr><td><code>src/components/publications/publications-workbench.tsx</code></td><td>TikTok + “Registro interno”</td></tr>
+<tr><td><code>src/lib/ai/providers/mock-provider.ts</code></td><td>canal TikTok en <code>CHANNEL_CONFIG</code></td></tr>
+<tr><td><code>src/lib/services/dashboard-service.ts</code></td><td>nuevas métricas reales</td></tr>
+<tr><td><code>src/lib/services/property-service.ts</code></td><td><code>title=null</code>, <code>published_at</code> en <code>active</code>, sin gate “published”</td></tr>
+<tr><td><code>src/lib/types/property.ts</code></td><td><code>PropertyStatus = draft\|active\|paused\|closed\|archived</code>, <code>folio</code>, labels</td></tr>
+<tr><td><code>src/lib/types/content.ts</code></td><td><code>ContentChannel</code> incluye <code>tiktok</code></td></tr>
+<tr><td><code>src/lib/types/publication.ts</code></td><td><code>PUBLICATION_PLATFORMS</code> incluye <code>tiktok</code></td></tr>
+<tr><td><code>src/lib/validators/property.ts</code></td><td>título opcional al crear</td></tr>
+<tr><td><code>src/lib/validators/publication.test.ts</code></td><td>test usa “unknown”</td></tr>
+<tr><td><code>src/app/api/properties/content.integration.test.ts</code></td><td>test usa “unknown”</td></tr>
+<tr><td><code>src/app/api/publications/route.integration.test.ts</code></td><td>test usa “unknown”</td></tr>
+<tr><td><strong>Nuevo</strong>: <code>supabase/migrations/20260824130000_phase12_entrega1.sql</code></td><td>4 sentencias</td></tr>
+</tbody>
+</table>
+
+<h2>2. Migraciones</h2>
+<table>
+<thead><tr><th>#</th><th>Qué hace</th></tr></thead>
+<tbody>
+<tr><td>M1</td><td><code>publications.platform</code> check → añade <code>'tiktok'</code></td></tr>
+<tr><td>M2</td><td>Secuencia <code>properties_folio_seq</code>, columna <code>folio text NOT NULL UNIQUE</code>, trigger <code>set_property_folio_title()</code> (asigna <code>CF-000000</code> y si <code>title</code> vacío lo iguala al folio)</td></tr>
+<tr><td>M3</td><td><code>property_media.derived_from uuid REFERENCES property_media(id)</code></td></tr>
+<tr><td>M4</td><td><code>UPDATE properties SET status='active' WHERE status='published'</code></td></tr>
+</tbody>
+</table>
+<p class="badge badge-amber">Estado: creados en repo, <strong>NO aplicados</strong> a la BD Supabase (requiere <code>supabase link --project-ref zkcspkxhhmpwbtxauldw && supabase db push</code> o ejecutar el SQL en el SQL Editor). Hasta aplicarse, los <code>INSERT</code> en producción fallarán por <code>folio NOT NULL</code>.</p>
+
+<h2>3. Cambios en Inicio, Dashboard y Expediente</h2>
+<table>
+<thead><tr><th>Área</th><th>Antes</th><th>Ahora (Entrega 1)</th></tr></thead>
+<tbody>
+<tr>
+<td><strong>Inicio (<code>/</code>)</strong></td>
+<td>Hero + <code>HomeOverview</code> (KPIs) + 4 accesos “Módulos”</td>
+<td><strong>Portada limpia</strong>: logo CF, hero, “CF Digital”, subtítulo, botones “Crear propiedad” y “Ver dashboard”. Sin KPIs ni módulos.</td>
+</tr>
+<tr>
+<td><strong>Dashboard (<code>/dashboard</code>)</strong></td>
+<td>7 tarjetas estáticas (total, borrador, publicadas, archivadas, media, imágenes, videos, leads)</td>
+<td><strong>12 tarjetas reales</strong>: total, borrador, <strong>en comercialización</strong>, archivadas, <strong>pendientes de fotos</strong>, <strong>pendientes de staging</strong> (aviso “integración pendiente”), <strong>vista imprimible disponible</strong> (cuenta total, nota “no es PDF”), <strong>copies pendientes (FB/IG/TK)</strong>, <strong>publicaciones programadas</strong>, <strong>publicaciones internas (sin confirmar red social)</strong>, <strong>reel (integración pendiente)</strong>, <strong>confirmadas en red social (integración pendiente)</strong>. Lista “En comercialización recientemente”.</td>
+</tr>
+<tr>
+<td><strong>Expediente (<code>/properties</code> → seleccionar)</strong></td>
+<td>Formulario + pestañas Media / Contenido; botón “Publicar” (gate descripción+precio)</td>
+<td><strong>7 pasos ordenados en una sola vista</strong>: 1) Datos (Editar, folio, tipo/op/precio), 2) Fotos múltiples (upload + lista), 3) <strong>Staging</strong> (aviso “Pendiente de integración”), 4) <strong>Reel</strong> (aviso “Pendiente de integración”), 5) <strong>Ficha</strong> (botón “Ver ficha / vista imprimible”, aviso “no es PDF automático”), 6) <strong>Copies IA</strong> (FB/IG/TK, badge “simulado” si <code>provider=mock</code>), 7) <strong>Revisión / programación / publicación</strong> (botón estado comercial + link a publicaciones, aviso “registro interno”). Botón “Publicar” eliminado del inventario; “Generar PDF” → “Ver ficha”.</td>
+</tr>
+</tbody>
+</table>
+
+<h2>4. Folio automático (<code>CF-000123</code>)</h2>
+<ul>
+<li><strong>Secuencia</strong>: <code>properties_folio_seq</code> (start 1).</li>
+<li><strong>Trigger BEFORE INSERT</strong>: si <code>folio</code> nulo → <code>CF-</code> + <code>lpad(nextval(...),6,'0')</code>; si <code>title</code> nulo/"" → <code>title = folio</code>.</li>
+<li><strong>CreateProperty</strong>: envía <code>title: input.title ?? null</code>; el trigger rellena ambos.</li>
+<li><strong>Edición</strong>: si el usuario borra el título, el trigger lo repone con el folio.</li>
+<li><strong>Backfill</strong>: la migración asigna folios a filas existentes (<code>CF-000001…</code>).</li>
+</ul>
+
+<h2>5. TikTok, copies simulados, publicaciones internas, estados comerciales</h2>
+<table>
+<thead><tr><th>Capa</th><th>Cambio</th></tr></thead>
+<tbody>
+<tr><td><strong>Tipos</strong></td><td><code>ContentChannel</code> / <code>PUBLICATION_PLATFORMS</code> = <code>["facebook","instagram","whatsapp","tiktok"]</code></td></tr>
+<tr><td><strong>Mock provider</strong></td><td><code>CHANNEL_CONFIG.tiktok = { cta: "Comenta o envíanos DM…", hashtagCount: 8 }</code></td></tr>
+<tr><td><strong>Workbench Copies</strong></td><td>Selector de canal incluye TikTok; cada generación muestra <span class="badge badge-amber">simulado</span> cuando <code>gen.provider === "mock"</code>; leyenda “Generados con proveedor simulado…”.</td></tr>
+<tr><td><strong>Publicaciones</strong></td><td>Plataforma TikTok disponible; cuando <code>status="published"</code> la fila muestra <strong>“Registro interno (sin confirmación de red social)”</strong> (no “confirmada”).</td></tr>
+<tr><td><strong>Estados comerciales (Property)</strong></td><td><code>draft → active → paused → active → closed → archived</code>. NO existe <code>published</code>. El select del formulario dice <strong>“Estado comercial”</strong>; botón en expediente paso 7 muestra <strong>“Poner en comercialización” / “Pausar” / “Reanudar”</strong>.</td></tr>
+</tbody>
+</table>
+
+<h2>6. Pruebas ejecutadas</h2>
+<pre>Test Files  12 passed (12)
+Tests       40 passed (40)</pre>
+<ul>
+<li>Unit: property validators (create/update, título opcional), publication validators (incl. “unknown”), mock listing, page heading.</li>
+<li>Integración: <code>/api/properties/:id/generate-content</code> (401, 400 canal inválido, 201 ok, list), <code>/api/publications</code> (401, 400 plataforma inválida, 201 ok, schedule/publish/cancel), <code>/api/dashboard/summary</code> (401, 200 shape).</li>
+<li>Lint: <strong>0 warnings/errors</strong> (<code>npm run lint</code>).</li>
+<li>TypeCheck: <strong>0 errors</strong> (<code>npx tsc --noEmit</code>).</li>
+</ul>
+
+<h2>7. Build de producción</h2>
+<pre>npm run build  →  OK
+○ / (Static)          2.66 kB
+○ /dashboard          2.66 kB
+○ /properties         7.78 kB
+○ /properties/[id]/ficha  2.47 kB
+○ /publications       3.86 kB
+○ /register           1.34 kB
+First Load JS shared  103 kB</pre>
+<p>Sin errores ni warnings de tipo.</p>
+
+<h2>8. Errores, advertencias y pendientes reales</h2>
+<table>
+<thead><tr><th>Ítem</th><th>Detalle</th></tr></thead>
+<tbody>
+<tr><td><strong>Migración no aplicada</strong></td><td><code>folio NOT NULL</code> fallará en inserts reales hasta ejecutar <code>supabase db push</code> con proyecto vinculado o pegar el SQL en Supabase.</td></tr>
+<tr><td><strong>Feature flags</strong></td><td><code>STAGING_PROVIDER</code>, <code>REEL_PROVIDER</code>, <code>SOCIAL_INTEGRATION</code> leídos en <code>dashboard-service.ts</code>; si no están definidos, las tarjetas correspondientes muestran “integración pendiente”.</td></tr>
+<tr><td><strong>Artefactos sin trackear</strong></td><td><code>diagnostico-*.html/pdf</code>, <code>plan-*.html/pdf</code>, <code>generar-pdf.mjs</code> quedan en working tree (no commiteados).</td></tr>
+<tr><td><strong>Líneas CRLF</strong></td><td>Git advierte LF→CRLF en Windows; sin impacto funcional.</td></tr>
+</tbody>
+</table>
+
+<h2>9. Confirmación explícita de lo <strong>NO</strong> implementado (fuera de Entrega 1)</h2>
+<ul>
+<li><strong>Staging real / amueblado</strong>: no hay proveedor, no hay llamada a API, no hay generación de imagen derivada; el paso 3 solo muestra aviso “Pendiente de integración de staging”.</li>
+<li><strong>Reel real</strong>: no hay proveedor, no hay generación de video; el paso 4 solo muestra aviso “Generación de reel pendiente de integración (REEL_PROVIDER)”.</li>
+<li><strong>PDF profesional descargable</strong>: <code>window.print()</code> sigue siendo la única opción; la ficha etiqueta <strong>“Vista imprimible disponible (no es un PDF automático ni descargable)”</strong>; no hay biblioteca de PDF ni endpoint de descarga.</li>
+<li><strong>Publicación real en redes sociales</strong>: el endpoint <code>/api/publications</code> persiste un registro con <code>status="published"</code> y <code>confirmed_at = now()</code>, pero <strong>no llama a Graph API, Instagram API ni TikTok API</strong>; la UI etiqueta cada publicación como <strong>“Registro interno (sin confirmación de red social)”</strong> y el dashboard <strong>no las cuenta como confirmadas</strong>.</li>
+</ul>
+<p><em>Entrega 2 (staging real, reel real, PDF descargable, integraciones sociales oficiales) queda <strong>explícitamente fuera</strong> de este alcance.</em></p>
+
+<div class="footer">
+Generado automáticamente · CF Digital · <code>73cc656</code>
+</div>
+</body>
+</html>

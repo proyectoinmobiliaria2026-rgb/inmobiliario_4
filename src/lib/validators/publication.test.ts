@@ -10,11 +10,11 @@ describe("publication validators", () => {
 
   it("normalizes and accepts a valid publication", () => {
     expect(
-      parseCreatePublicationInput({ propertyId: " p1 ", platform: " facebook ", mode: "automatic", copy: " Hola ", hashtags: ["#casa", " mx "], cta: " Escribe ya " })
+      parseCreatePublicationInput({ propertyId: " p1 ", platform: " facebook ", mode: "direct_api", copy: " Hola ", hashtags: ["#casa", " mx "], cta: " Escribe ya " })
     ).toMatchObject({
       propertyId: "p1",
       platform: "facebook",
-      mode: "automatic",
+      mode: "direct_api",
       copy: "Hola",
       hashtags: ["casa", "mx"],
       cta: "Escribe ya"
