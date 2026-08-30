@@ -1,6 +1,6 @@
 # CFDIGITAL
 
-Estado actual: Fase 10 completada (leads, publicaciones y scheduler) con UI SaaS rediseñada (Tailwind CSS v4) y despliegue en Vercel.
+Estado actual: Fase 14 completada (workbench diario de publicaciones multicanal) sobre la base de Fase 13 (publicaciones multicanal por modo asistido/API). UI SaaS con Tailwind CSS v4 y despliegue en Vercel.
 
 Este repositorio sigue el "Prompt Operativo Maestro" de CFDIGITAL con arquitectura unificada full-stack en un solo proyecto.
 
@@ -91,4 +91,4 @@ Este repositorio sigue el "Prompt Operativo Maestro" de CFDIGITAL con arquitectu
 
 ## Siguiente fase
 
-Fase 11+: modulos funcionales por prioridad de negocio (integraciones reales de publicacion en redes, auditoria, reportes). Ver `ARCHITECTURE_PLAN.md` y `DEPLOYMENT.md`.
+Fase 15: ultimas integraciones reales por prioridad de negocio (conexion real a APIs de Instagram/TikTok, staging de fotos, reel y reportes/auditoria). Ver `ARCHITECTURE_PLAN.md` y `DEPLOYMENT.md`.

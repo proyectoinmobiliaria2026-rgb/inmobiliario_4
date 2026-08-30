@@ -232,3 +232,37 @@ All notable changes to this project will be documented in this file.
   - Removed the Área (m²) field from the form (kept optional at API level for compatibility).
   - New columns `amenities text[]` and `rental_requirements text[]` on `properties` (migration `20260824120000_phase11_property_details.sql`, applied to remote).
 - Printable property sheet at `/properties/:id/ficha` with "Generar PDF" button per row (browser print-to-PDF, print-optimized styles).
+
+## [0.14.0] - 2026-08-30
+
+### Added
+
+- Phase 13 - Multichannel publications backend (modes and states):
+  - `PublicationMode` (assisted_manual, direct_api, local_test) and per-mode status sets (`api_submitted`, `prepared`, `manual_queue`, `ready_to_publish`, `published_manually`, `skipped`) in `src/lib/types/publication.ts`.
+  - `assisted_manual` (Facebook Groups) flow: `prepared -> manual_queue -> ready_to_publish -> published_manually` with `confirmed_by`/`confirmed_at_manual` and batch fields (`group_batch`, `batch_time_slot`).
+  - `direct_api` (Instagram/TikTok) flow: `draft -> scheduled -> api_submitted -> published` with external confirmation (`external_id`, `confirmed_at`).
+  - Status-transition guards and manual/API actions (`performManualAction`, `confirmApiPublication`, `failApiPublication`) in `src/lib/services/publication-service.ts` (+267).
+  - New API routes:
+    - `POST /api/publications/:id/manual-action` (moved_to_queue, marked_ready, published_manually, skipped, failed).
+    - `POST|PATCH /api/publications/:id/confirm-api` (confirm with external id/url, or mark failed).
+    - `GET /api/publications/:id/manual-actions` (audit log list).
+    - `GET /api/publications?summary=by_mode` (per-mode/per-status totals).
+  - Audit table `publication_manual_actions` and helpers (`get_publications_summary_by_mode`, confirm triggers) in migration `20260827000000_phase13_multichannel_publications.sql` (applied to remote).
+  - Updated validator `parseManualActionInput` and switched the old `automatic` mode to `direct_api` in `src/lib/validators/publication.test.ts`.
+
+- Phase 14 - Daily multichannel publications workbench (`src/components/publications/publications-workbench.tsx`):
+  - New-publication form with explicit mode selection and per-mode required fields (assisted_manual requires group/lote and batch_time_slot, fixing the SQL `publications_batch_fields_check` mismatch).
+  - "Enfocarse hoy" agenda panel (items needing action today: manual_queue, ready_to_publish, api_submitted, today's scheduled).
+  - Full queue with filters by status/mode/platform.
+  - Contextual per-status actions using the new endpoints (Facebook assisted steps, direct API publish/schedule/confirm/fail, local test publish).
+  - Confirmation modals for `published_manually`, `confirm-api` and API failure.
+  - Per-mode summary and per-row manual action history.
+  - Badge styles for the new statuses and modes in `globals.css`.
+  - `ARCHITECTURE_PLAN.md` formalized (Fase 14 scope, design, deliverables and acceptance criteria).
+
+### Verified
+
+- Typecheck (`tsc --noEmit`) clean.
+- ESLint clean.
+- Unit + integration tests: 40/40 passing.
+- Production build OK (26 pages generated).
