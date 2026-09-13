@@ -112,7 +112,7 @@ export async function getDashboardSummary(supabase: SupabaseClient): Promise<Das
     copiesPending,
     publicationsScheduled,
     publicationsPublishedInternal,
-    stagingIntegrated: Boolean(process.env.STAGING_PROVIDER),
+    stagingIntegrated: Boolean(process.env.OPENAI_API_KEY ?? process.env.AI_API_KEY),
     reelIntegrated: Boolean(process.env.REEL_PROVIDER),
     socialIntegrated: Boolean(process.env.SOCIAL_INTEGRATION),
     recentPublished: (recent.data ?? []) as PropertyRecord[]

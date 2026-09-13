@@ -266,3 +266,24 @@ All notable changes to this project will be documented in this file.
 - ESLint clean.
 - Unit + integration tests: 40/40 passing.
 - Production build OK (26 pages generated).
+
+## [0.15.0] - 2026-09-13
+
+### Added
+
+- Phase 15 - Real photo staging (furnishing) with OpenAI (`src/lib/ai/staging-service.ts`):
+  - `generatePropertyStaging(supabase, userId, propertyId, sourceMediaId)` → `StagingResult` (`PropertyMediaWithUrl` + `generationId`).
+  - Downloads the source photo from the `property-media` bucket, calls the OpenAI Images Edits API (`gpt-image-1`, 1024×1024, `b64_json`) with a Spanish staging prompt, re-uploads the result to the bucket and registers:
+    - a `property_media` row with `state='generated'`, `derived_from = sourceMediaId` and AI metadata (`prompt`, `provider`, `model`);
+    - an `ai_generations` row (`channel='staging'`, `prompt`, `output_url`, `status='success'`).
+  - Re-export at `src/lib/services/staging-service.ts` so the API-route convention stays `@/lib/services/*`.
+- New endpoint `POST /api/properties/:id/media/:mediaId/staging` (wraps `generatePropertyStaging`, returns the generated media list, 201).
+- `properties-workbench.tsx`: "Generar staging" button per original photo (with generating state), real `expediente-staging` panel listing generated items (Staging badge, source photo, delete), and loading of staging results back into the media list after generation.
+- `dashboard-service.ts`: `stagingIntegrated` now reflects real capability via `OPENAI_API_KEY`/`AI_API_KEY` instead of a placeholder env flag.
+
+### Verified
+
+- Typecheck (`tsc --noEmit`) clean.
+- ESLint clean.
+- Unit + integration tests.
+- Production build OK.

@@ -47,6 +47,7 @@ type MediaItem = {
   storage_path: string;
   mime_type: string | null;
   file_size_bytes: number | null;
+  derived_from: string | null;
   signed_url: string | null;
 };
 
@@ -257,6 +258,7 @@ export function PropertiesWorkbench() {
   const [mediaState, setMediaState] = useState("original");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [generatingStaging, setGeneratingStaging] = useState(false);
 
   const [contentChannel, setContentChannel] = useState("facebook");
   const [generations, setGenerations] = useState<GenerationItem[]>([]);
@@ -675,6 +677,30 @@ export function PropertiesWorkbench() {
     await loadMedia(selectedPropertyId);
   }
 
+  async function generateStaging(mediaId: string) {
+    if (!selectedPropertyId) return;
+    setError("");
+    setGeneratingStaging(true);
+    setNotice("Generando versión amueblada con IA...");
+
+    try {
+      const response = await apiFetch(`/api/properties/${selectedPropertyId}/media/${mediaId}/staging`, {
+        method: "POST"
+      });
+      const payload = (await response.json()) as ApiResponse<MediaItem[]>;
+      if (!payload.ok) {
+        setError(payload.reason ?? "No se pudo generar el staging");
+        return;
+      }
+      setNotice("Versión amueblada generada");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo generar el staging");
+    } finally {
+      setGeneratingStaging(false);
+      await loadMedia(selectedPropertyId);
+    }
+  }
+
   async function deleteMedia(mediaId: string) {
     if (!selectedPropertyId) return;
     setError("");
@@ -1057,7 +1083,35 @@ export function PropertiesWorkbench() {
 
             <section data-testid="expediente-staging">
               <h4 className="exp-step">3. Staging de fotos (amueblado)</h4>
-              <p className="notice">Pendiente de integración de staging. Al conectar STAGING_PROVIDER se generará aquí la versión amueblada derivada de las fotos originales.</p>
+              {media.some((item) => item.state === "generated") ? (
+                <p className="panel-subtitle mb-3">Versiones amuebladas generadas con IA (gpt-image-1).</p>
+              ) : (
+                <p className="panel-subtitle mb-3">Genera una versión amueblada con IA a partir de una foto original. Selecciona una imagen de la lista de arriba.</p>
+              )}
+              <div className="list mt-3">
+                {media.filter((item) => item.state === "generated").map((item) => (
+                  <div key={item.id} className="property-row media-row">
+                    {item.signed_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img className="media-thumb" src={item.signed_url} alt="Staging generado" />
+                    )}
+                    <span className="badge badge-won">Staging</span>
+                    <span className="badge badge-published">generated</span>
+                    <span className="muted">Amueblado con IA</span>
+                    <div className="actions">
+                      <button type="button" onClick={() => deleteMedia(item.id)} className="btn-danger">Eliminar</button>
+                    </div>
+                  </div>
+                ))}
+                {media.filter((item) => item.state === "generated").length === 0 && <p className="muted">Aún no hay versiones amuebladas.</p>}
+              </div>
+              <div className="actions mt-3">
+                {media.filter((item) => item.state === "original").map((item) => (
+                  <button key={item.id} type="button" className="btn-primary" disabled={generatingStaging} onClick={() => void generateStaging(item.id)}>
+                    {generatingStaging ? "Generando..." : `Generar staging (${item.storage_path.split("/").pop()})`}
+                  </button>
+                ))}
+              </div>
             </section>
 
             <section data-testid="expediente-reel">
