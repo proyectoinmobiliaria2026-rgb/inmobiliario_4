@@ -1,5 +1,6 @@
 import { UnauthorizedError, requireAuthContext } from "@/lib/auth/route-auth";
 import { generatePropertyStaging } from "@/lib/services/staging-service";
+import { logEvent } from "@/lib/services/event-log-service";
 import { NextRequest, NextResponse } from "next/server";
 
 type RouteContext = {
@@ -11,6 +12,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const { supabase, user } = await requireAuthContext(request);
     const { id, mediaId } = await context.params;
     const data = await generatePropertyStaging(supabase, user.id, id, mediaId);
+    await logEvent(supabase, user.id, {
+      eventType: "staging.generated",
+      entityType: "property_media",
+      entityId: mediaId,
+      payload: { propertyId: id }
+    });
     return NextResponse.json({ ok: true, data }, { status: 201 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {

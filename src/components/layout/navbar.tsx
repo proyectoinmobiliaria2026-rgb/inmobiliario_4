@@ -19,6 +19,7 @@ const NAV_LINKS = [
   { href: "/properties", label: "Propiedades" },
   { href: "/leads", label: "Leads" },
   { href: "/publications", label: "Publicaciones" },
+  { href: "/reportes", label: "Reportes" },
   { href: "/account", label: "Mi cuenta" }
 ];
 
