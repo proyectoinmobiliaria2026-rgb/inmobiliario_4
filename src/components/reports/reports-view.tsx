@@ -107,6 +107,37 @@ export function ReportsView({ initialUser }: ReportsViewProps) {
 
   return (
     <div className="space-y-6">
+      <div className="print:hidden flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold tracking-tight text-slate-100">
+          Reportes y auditoría
+        </h1>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
+        >
+          Exportar PDF
+        </button>
+      </div>
+
+      <style>{`
+        @media print {
+          html, body { background: #fff !important; }
+          aside, header, nav, footer { display: none !important; }
+          body { color: #0f172a !important; }
+          .text-slate-200, .text-slate-300, .text-slate-400, .text-slate-500,
+          .text-slate-100, .text-indigo-300, .text-emerald-300, .text-sky-300,
+          .text-red-300, .text-amber-300, .text-orange-300, .text-violet-300 {
+            color: #0f172a !important;
+          }
+          .bg-slate-900, .bg-slate-900\/60, .bg-slate-900\/40, .bg-red-950\/40 {
+            background: #fff !important;
+            border-color: #e2e8f0 !important;
+          }
+          .border-slate-800, .border-red-800 { border-color: #e2e8f0 !important; }
+          div, ul, li { break-inside: avoid; }
+        }
+      `}</style>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard label="Publicaciones" value={publicationCounts.total} accent="text-indigo-300" />
         <StatCard
