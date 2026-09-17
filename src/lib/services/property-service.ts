@@ -20,9 +20,22 @@ export type PropertyListResult = {
   totalPages: number;
 };
 
+function genFolio() {
+  const d = new Date();
+  const parts = [
+    d.getFullYear().toString().slice(2),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+    "-",
+    d.getTime().toString(36).toUpperCase()
+  ];
+  return "CF-" + parts.join("");
+}
+
 function toInsertPayload(input: CreatePropertyInput, userId: string) {
   return {
     created_by: userId,
+    folio: genFolio(),
     title: input.title ?? null,
     description: input.description ?? null,
     property_type: input.propertyType,
